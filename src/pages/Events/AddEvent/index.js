@@ -21,9 +21,8 @@ import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 import Dropzone from "react-dropzone";
 
-//Import Images
-import avatar3 from "../../../assets/images/users/avatar-3.jpg";
-import avatar4 from "../../../assets/images/users/avatar-4.jpg";
+import { createEvent } from "../../../api/events";
+import { useNavigate } from "react-router-dom";
 
 const CreateProject = () => {
   const SingleOptions = [
@@ -33,6 +32,45 @@ const CreateProject = () => {
     { value: "20% off", label: "20% off" },
     { value: "4 star", label: "4 star" },
   ];
+  const [eventData, setEventData] = useState({
+    name: "",
+    description: "",
+    startTime: "",
+    endTime: "",
+    thumbnailUrl: "",
+  });
+  const navigate = useNavigate();
+
+  // CKEditor için ayrı state
+  const [editorData, setEditorData] = useState("");
+
+  // Başlama ve bitiş tarihi için ayrı state
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
+  // Kapak resmi için url
+  const [thumbnailUrl, setThumbnailUrl] = useState("");
+
+  // Form submit fonksiyonu
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // eventData'yı güncelle
+    const payload = {
+      ...eventData,
+      description: editorData,
+      startTime: startDate ? startDate[0] : "",
+      endTime: endDate ? endDate[0] : "",
+      thumbnailUrl: thumbnailUrl,
+    };
+    try {
+      await createEvent(payload);
+      navigate("/apps-events-all"); // Yönlendirmek istediğiniz sayfanın path'i
+      // Başarılı ekleme sonrası istersen yönlendirme veya mesaj ekleyebilirsin
+    } catch (err) {
+      // Hata yönetimi
+      console.error(err);
+    }
+  };
 
   const [selectedMulti, setselectedMulti] = useState(null);
 
@@ -74,93 +112,118 @@ const CreateProject = () => {
           <BreadCrumb title="Etkinlik Ekle" pageTitle="Etkinlikler" />
           <Row>
             <Col lg={10}>
-              <Card>
-                <CardBody>
-                  <div className="mb-3">
-                    <Label className="form-label" htmlFor="project-title-input">
-                      Etkinlik Başlığı
-                    </Label>
-                    <Input
-                      type="text"
-                      className="form-control"
-                      id="project-title-input"
-                      placeholder="Etkinlik Başlığı Girin"
-                    />
-                  </div>
+              <form onSubmit={handleSubmit}>
+                <Card>
+                  <CardBody>
+                    <div className="mb-3">
+                      <Label
+                        className="form-label"
+                        htmlFor="project-title-input"
+                      >
+                        Etkinlik Başlığı
+                      </Label>
+                      <Input
+                        type="text"
+                        className="form-control"
+                        id="project-title-input"
+                        placeholder="Etkinlik Başlığı Girin"
+                        value={eventData.name}
+                        onChange={(e) =>
+                          setEventData({ ...eventData, name: e.target.value })
+                        }
+                      />
+                    </div>
 
-                  <div className="mb-3">
-                    <Label
-                      className="form-label"
-                      htmlFor="project-thumbnail-img"
-                    >
-                      Kapak Resmi
-                    </Label>
-                    <Input
-                      className="form-control"
-                      id="project-thumbnail-img"
-                      type="file"
-                      accept="image/png, image/gif, image/jpeg"
-                    />
-                  </div>
+                    <div className="mb-3">
+                      <Label
+                        className="form-label"
+                        htmlFor="project-thumbnail-img"
+                      >
+                        Kapak Resmi (URL)
+                      </Label>
+                      <Input
+                        className="form-control"
+                        id="project-thumbnail-img"
+                        type="text"
+                        placeholder="Kapak Resmi URL'si"
+                        value={thumbnailUrl}
+                        onChange={(e) => setThumbnailUrl(e.target.value)}
+                      />
+                    </div>
 
-                  <div className="mb-3">
-                    <Label className="form-label">Etkinlik Açıklaması</Label>
-                    <CKEditor
-                      editor={ClassicEditor}
-                      data="<p>Hello from CKEditor 5!</p>"
-                      onReady={(editor) => {
-                        // You can store the "editor" and use when it is needed.
-                      }}
-                      onChange={(editor) => {
-                        editor.getData();
-                      }}
-                    />
-                  </div>
+                    <div className="mb-3">
+                      <Label className="form-label">Etkinlik Açıklaması</Label>
+                      <CKEditor
+                        editor={ClassicEditor}
+                        data={editorData}
+                        onChange={(event, editor) => {
+                          setEditorData(editor.getData());
+                        }}
+                      />
+                    </div>
 
-                  <Row>
-                    <Col lg={4} style={{ maxWidth: "240px" }}>
-                      <div>
-                        <Label
-                          htmlFor="datepicker-deadline-input"
-                          className="form-label"
-                        >
-                          Etkinlik Başlama Tarihi ve Saati
-                        </Label>
-                        <Flatpickr
-                          className="form-control "
-                          options={{
-                            enableTime: true,
-                            time_24hr: true,
-                            dateFormat: "d M, Y H:i", // H:i = saat:dakika
-                            locale: Turkish,
-                          }}
-                          placeholder="Etkinlik Tarihi Seçin"
-                        />
-                      </div>
-                    </Col>
-                    <Col lg={4} style={{ maxWidth: "240px" }}>
-                      <div>
-                        <Label
-                          htmlFor="datepicker-deadline-input"
-                          className="form-label"
-                        >
-                          Etkinlik Bitiş Tarihi ve Saati
-                        </Label>
-                        <Flatpickr
-                          className="form-control "
-                          options={{
-                            enableTime: true,
-                            time_24hr: true,
-                            dateFormat: "d M, Y H:i", // H:i = saat:dakika
-                            locale: Turkish,
-                          }}
-                          placeholder="Etkinlik Tarihi Seçin"
-                        />
-                      </div>
-                    </Col>
-                  </Row>
-                </CardBody>
-              </Card>
+                    <Row>
+                      <Col lg={4} style={{ maxWidth: "240px" }}>
+                        <div>
+                          <Label
+                            htmlFor="datepicker-deadline-input"
+                            className="form-label"
+                          >
+                            Etkinlik Başlama Tarihi ve Saati
+                          </Label>
+                          <Flatpickr
+                            className="form-control "
+                            options={{
+                              enableTime: true,
+                              time_24hr: true,
+                              dateFormat: "Y-m-d H:i",
+                              locale: Turkish,
+                            }}
+                            placeholder="Etkinlik Tarihi Seçin"
+                            value={startDate}
+                            onChange={(date) => setStartDate(date)}
+                          />
+                        </div>
+                      </Col>
+                      <Col lg={4} style={{ maxWidth: "240px" }}>
+                        <div>
+                          <Label
+                            htmlFor="datepicker-deadline-input"
+                            className="form-label"
+                          >
+                            Etkinlik Bitiş Tarihi ve Saati
+                          </Label>
+                          <Flatpickr
+                            className="form-control "
+                            options={{
+                              enableTime: true,
+                              time_24hr: true,
+                              dateFormat: "Y-m-d H:i",
+                              locale: Turkish,
+                            }}
+                            placeholder="Etkinlik Tarihi Seçin"
+                            value={endDate}
+                            onChange={(date) => setEndDate(date)}
+                          />
+                        </div>
+                      </Col>
+                    </Row>
+                  </CardBody>
+                </Card>
+                <div className="text-end mb-4 ">
+                  <button
+                    type="button"
+                    className="btn btn-soft-secondary w-sm me-1"
+                  >
+                    Sil
+                  </button>
+
+                  <button type="submit" className="btn btn-success w-sm">
+                    Ekle
+                  </button>
+                </div>
+              </form>
+              {/* Add more sections as needed 
               <Card>
                 <CardHeader>
                   <h5 className="card-title mb-0">Dosya Ekle</h5>
@@ -230,19 +293,7 @@ const CreateProject = () => {
                   </div>
                 </CardBody>
               </Card>
-
-              <div className="text-end mb-4 ">
-                <button
-                  type="submit"
-                  className="btn btn-soft-secondary w-sm me-1"
-                >
-                  Sil
-                </button>
-
-                <button type="submit" className="btn btn-success w-sm">
-                  Ekle
-                </button>
-              </div>
+*/}
             </Col>
           </Row>
         </Container>

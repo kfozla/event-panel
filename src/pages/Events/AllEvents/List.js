@@ -21,42 +21,39 @@ import { useSelector, useDispatch } from "react-redux";
 import FeatherIcon from "feather-icons-react";
 
 //import action
-import {
-  getProjectList as onGetProjectList,
-  deleteProjectList as onDeleteProjectList,
-} from "../../../slices/thunks";
+import { getEventList, deleteEventList } from "../../../slices/thunks";
 import { createSelector } from "reselect";
+import { use } from "react";
 
 const List = () => {
   const dispatch = useDispatch();
 
   const selectDashboardData = createSelector(
-    (state) => state.Projects,
-    (projectLists) => projectLists.projectLists
+    (state) => state.Events,
+    (Events) => Events.eventLists
   );
   // Inside your component
-  const projectLists = useSelector(selectDashboardData);
+  const eventLists = useSelector(selectDashboardData);
 
-  const [project, setProject] = useState(null);
+  const [event, setEvent] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
 
   useEffect(() => {
-    dispatch(onGetProjectList());
+    dispatch(getEventList());
   }, [dispatch]);
 
   useEffect(() => {
-    setProject(projectLists);
-  }, [projectLists]);
+    setEvent(eventLists);
+  }, [eventLists]);
 
   // delete
-  const onClickData = (project) => {
-    setProject(project);
+  const onClickData = (event) => {
+    setEvent(event);
     setDeleteModal(true);
   };
-
-  const handleDeleteProjectList = () => {
-    if (project) {
-      dispatch(onDeleteProjectList(project.id));
+  const handleDeleteEventList = () => {
+    if (event) {
+      dispatch(deleteEventList(event.id));
       setDeleteModal(false);
     }
   };
@@ -68,12 +65,13 @@ const List = () => {
       ele.closest("button").classList.add("active");
     }
   };
+  console.log("eventLists", eventLists);
   return (
     <React.Fragment>
       <ToastContainer closeButton={false} />
       <DeleteModal
         show={deleteModal}
-        onDeleteClick={() => handleDeleteProjectList()}
+        onDeleteClick={() => handleDeleteEventList()}
         onCloseClick={() => setDeleteModal(false)}
       />
       <Row className="g-4 mb-3">
@@ -115,122 +113,140 @@ const List = () => {
       </Row>
 
       <div className="row">
-        {(projectLists || []).map((item, index) => (
+        {(eventLists || []).map((item, index) => (
           <React.Fragment key={index}>
-            {item.isDesign1 ? (
-              <Col xxl={3} sm={6} className="project-card">
-                <Card className="card-height-100">
-                  <CardBody>
-                    <div className="d-flex flex-column h-100">
-                      <div className="d-flex ">
-                        <div className="flex-grow-1">
-                          <p className="text-muted mb-4">{item.time}</p>
-                        </div>
-                        <div className="flex-shrink-0">
-                          <div className="d-flex gap-1 align-items-center">
-                            <button
-                              type="button"
-                              className={`btn avatar-xs mt-n1 p-0 favourite-btn ${item.ratingClass}`}
-                              onClick={(e) => activebtn(e.target)}
-                            >
-                              <span className="avatar-title bg-transparent fs-15">
-                                <i className="ri-star-fill"></i>
-                              </span>
-                            </button>
-                            <UncontrolledDropdown direction="start">
-                              <DropdownToggle
-                                tag="button"
-                                className="btn btn-link text-muted p-1 mt-n2 py-0 text-decoration-none fs-15"
-                              >
-                                <FeatherIcon
-                                  icon="more-horizontal"
-                                  className="icon-sm"
-                                />
-                              </DropdownToggle>
-
-                              <DropdownMenu className="dropdown-menu-end">
-                                <DropdownItem href="apps-projects-overview">
-                                  <i className="ri-eye-fill align-bottom me-2 text-muted"></i>{" "}
-                                  Görüntüle
-                                </DropdownItem>
-                                <DropdownItem href="apps-projects-create">
-                                  <i className="ri-pencil-fill align-bottom me-2 text-muted"></i>{" "}
-                                  Düzenle
-                                </DropdownItem>
-                                <div className="dropdown-divider"></div>
-                                <DropdownItem
-                                  href="#"
-                                  onClick={() => onClickData(item)}
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#removeProjectModal"
-                                >
-                                  <i className="ri-delete-bin-fill align-bottom me-2 text-muted"></i>{" "}
-                                  Sil
-                                </DropdownItem>
-                              </DropdownMenu>
-                            </UncontrolledDropdown>
-                          </div>
-                        </div>
+            <Col xxl={3} sm={6} className="project-card">
+              <Card className="card-height-100">
+                <CardBody>
+                  <div className="d-flex flex-column h-100">
+                    <div className="d-flex ">
+                      <div className="flex-grow-1">
+                        <p className="text-muted mb-4">
+                          {"Son Güncelleme : "}
+                          {item.modifiedOn &&
+                            new Date(item.modifiedOn).toLocaleString("tr-TR", {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}{" "}
+                        </p>
                       </div>
-                      <div className="d-flex mb-2">
-                        <div className="flex-shrink-0 me-3">
-                          <div className="avatar-sm">
-                            <span
-                              className={
-                                "avatar-title rounded p-2 bg-" +
-                                item.imgbgColor +
-                                "-subtle"
-                              }
-                            >
-                              <img
-                                src={item.img}
-                                alt=""
-                                className="img-fluid p-1"
-                              />
+                      <div className="flex-shrink-0">
+                        <div className="d-flex gap-1 align-items-center">
+                          <button
+                            type="button"
+                            className={`btn avatar-xs mt-n1 p-0 favourite-btn ${item.ratingClass}`}
+                            onClick={(e) => activebtn(e.target)}
+                          >
+                            <span className="avatar-title bg-transparent fs-15">
+                              <i className="ri-star-fill"></i>
                             </span>
-                          </div>
-                        </div>
-                        <div className="flex-grow-1">
-                          <h5 className="mb-1 fs-15">
-                            <Link
-                              to="/apps-events-overview"
-                              className="text-dark"
+                          </button>
+                          <UncontrolledDropdown direction="start">
+                            <DropdownToggle
+                              tag="button"
+                              className="btn btn-link text-muted p-1 mt-n2 py-0 text-decoration-none fs-15"
                             >
-                              {item.label}
-                            </Link>
-                          </h5>
-                          <p className="text-muted text-truncate-two-lines mb-3">
-                            {item.caption}
-                          </p>
+                              <FeatherIcon
+                                icon="more-horizontal"
+                                className="icon-sm"
+                              />
+                            </DropdownToggle>
+
+                            <DropdownMenu className="dropdown-menu-end">
+                              <DropdownItem href="apps-projects-overview">
+                                <i className="ri-eye-fill align-bottom me-2 text-muted"></i>{" "}
+                                Görüntüle
+                              </DropdownItem>
+                              <DropdownItem href="apps-projects-create">
+                                <i className="ri-pencil-fill align-bottom me-2 text-muted"></i>{" "}
+                                Düzenle
+                              </DropdownItem>
+                              <div className="dropdown-divider"></div>
+                              <DropdownItem
+                                href="#"
+                                onClick={() => onClickData(item)}
+                                data-bs-toggle="modal"
+                                data-bs-target="#removeProjectModal"
+                              >
+                                <i className="ri-delete-bin-fill align-bottom me-2 text-muted"></i>{" "}
+                                Sil
+                              </DropdownItem>
+                            </DropdownMenu>
+                          </UncontrolledDropdown>
                         </div>
                       </div>
                     </div>
-                  </CardBody>
-                  <div className="card-footer bg-transparent border-top-dashed py-2">
-                    <div className="d-flex align-items-center ">
-                      <div className="flex-shrink-0">
-                        <div className="text-muted">
-                          <span className="fw-bold">Başlama : </span>
-                          {/*hardcoded date*/}
-                          24 Temmuz 2025 14:30
+                    <div className="d-flex mb-2">
+                      <div className="flex-shrink-0 me-3">
+                        <div className="avatar-sm">
+                          <img
+                            src={item.thumbnailUrl}
+                            alt=""
+                            className="img-fluid rounded "
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
                         </div>
+                      </div>
+                      <div className="flex-grow-1">
+                        <h5 className="mb-1 fs-15">
+                          <Link
+                            to="/apps-events-overview"
+                            className="text-dark"
+                          >
+                            {item.name}
+                          </Link>
+                        </h5>
+                        <div
+                          className="text-muted text-truncate-two-lines"
+                          dangerouslySetInnerHTML={{ __html: item.description }}
+                        ></div>
                       </div>
                     </div>
                   </div>
-                  <div className="card-footer bg-transparent border-top-dashed py-2">
-                    <div className="d-flex align-items-center">
-                      <div className="flex-shrink-0">
-                        <div className="text-muted">
-                          <span className="fw-bold">Bitiş : </span>
-                          {/*hardcoded date*/}
-                          24 Temmuz 2025 14:30
-                        </div>
+                </CardBody>
+                <div className="card-footer bg-transparent border-top-dashed py-2">
+                  <div className="d-flex align-items-center ">
+                    <div className="flex-shrink-0">
+                      <div className="text-muted">
+                        <span className="fw-bold">Başlama : </span>
+                        {item.startTime &&
+                          new Date(item.startTime).toLocaleString("tr-TR", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}{" "}
                       </div>
                     </div>
                   </div>
-                </Card>
-              </Col>
-            ) : null}
+                </div>
+                <div className="card-footer bg-transparent border-top-dashed py-2">
+                  <div className="d-flex align-items-center">
+                    <div className="flex-shrink-0">
+                      <div className="text-muted">
+                        <span className="fw-bold">Bitiş : </span>
+                        {item.endTime &&
+                          new Date(item.endTime).toLocaleString("tr-TR", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </Col>
           </React.Fragment>
         ))}
       </div>

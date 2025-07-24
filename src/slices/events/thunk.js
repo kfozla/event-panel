@@ -16,18 +16,19 @@ export const getEventList = createAsyncThunk(
   async () => {
     try {
       const response = await getEvents();
-      return response.data;
+
+      return response;
     } catch (error) {
       return error;
     }
   }
 );
 export const getEventByIdList = createAsyncThunk(
-  "events/getEventById",
+  "events/getEventByIdList",
   async (id) => {
     try {
       const response = await getEventById(id);
-      return response.data;
+      return response;
     } catch (error) {
       return error;
     }
@@ -40,7 +41,7 @@ export const addEventList = createAsyncThunk(
     try {
       const response = await createEvent(event);
       toast.success("event Added Successfully", { autoClose: 3000 });
-      return response.data;
+      return response;
     } catch (error) {
       toast.error("event Added Failed", { autoClose: 3000 });
       return error;
@@ -54,7 +55,7 @@ export const updateEventList = createAsyncThunk(
     try {
       const response = await updateEvent(event);
       toast.success("event Updated Successfully", { autoClose: 3000 });
-      return response.data;
+      return response;
     } catch (error) {
       toast.error("event Updated Failed", { autoClose: 3000 });
       return error;
@@ -64,12 +65,11 @@ export const updateEventList = createAsyncThunk(
 
 export const deleteEventList = createAsyncThunk(
   "events/deleteEvent",
-  async (data) => {
+  async (id) => {
     try {
-      const response = await deleteEvent(data);
-
+      await deleteEvent(id);
       toast.success("event Delete Successfully", { autoClose: 3000 });
-      return response.data;
+      return id;
     } catch (error) {
       toast.error("event Delete Failed", { autoClose: 3000 });
       return error;

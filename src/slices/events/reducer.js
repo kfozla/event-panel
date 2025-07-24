@@ -24,7 +24,7 @@ const EventsSlice = createSlice({
     });
     builder.addCase(getEventByIdList.fulfilled, (state, action) => {
       const event = action.payload;
-      const existingEvent = state.eventLists.find((e) => e._id === event._id);
+      const existingEvent = state.eventLists.find((e) => e.id === event.id);
       if (existingEvent) {
         Object.assign(existingEvent, event);
       } else {
@@ -42,7 +42,7 @@ const EventsSlice = createSlice({
     });
     builder.addCase(updateEventList.fulfilled, (state, action) => {
       state.eventLists = state.eventLists.map((event) =>
-        event._id.toString() === action.payload._id.toString()
+        event.id.toString() === action.payload.id.toString()
           ? { ...event, ...action.payload }
           : event
       );
@@ -52,7 +52,7 @@ const EventsSlice = createSlice({
     });
     builder.addCase(deleteEventList.fulfilled, (state, action) => {
       state.eventLists = state.eventLists.filter(
-        (event) => event._id !== action.payload
+        (event) => event.id !== action.payload
       );
     });
     builder.addCase(deleteEventList.rejected, (state, action) => {
