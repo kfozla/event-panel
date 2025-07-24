@@ -27,7 +27,7 @@ import { useFormik } from "formik";
 // actions
 import { loginUser, socialLogin, resetLoginFlag } from "../../slices/thunks";
 
-import logoLight from "../../assets/images/logo-light.png";
+import logoLight from "../../assets/images/bocek.svg";
 import { createSelector } from "reselect";
 //import images
 
@@ -72,8 +72,8 @@ const Login = (props) => {
       password: userLogin.password || "123456" || "",
     },
     validationSchema: Yup.object({
-      email: Yup.string().required("Please Enter Your Email"),
-      password: Yup.string().required("Please Enter Your Password"),
+      email: Yup.string().required("Lütfen Email Girin"),
+      password: Yup.string().required("Lütfen Şifrenizi Girin"),
     }),
     onSubmit: (values) => {
       dispatch(loginUser(values, props.router.navigate));
@@ -111,11 +111,11 @@ const Login = (props) => {
                 <div className="text-center mt-sm-5 mb-4 text-white-50">
                   <div>
                     <Link to="/" className="d-inline-block auth-logo">
-                      <img src={logoLight} alt="" height="20" />
+                      <img src={logoLight} alt="" height="80" />
                     </Link>
                   </div>
                   <p className="mt-3 fs-15 fw-medium">
-                    Premium Admin & Dashboard Template
+                    Böceksoft Admin & Yönetim Paneli
                   </p>
                 </div>
               </Col>
@@ -126,9 +126,9 @@ const Login = (props) => {
                 <Card className="mt-4">
                   <CardBody className="p-4">
                     <div className="text-center mt-2">
-                      <h5 className="text-primary">Welcome Back !</h5>
+                      <h5 className="text-primary">Hoşgeldiniz!</h5>
                       <p className="text-muted">
-                        Sign in to continue to Velzon.
+                        Devam Etmek için lütfen giriş yapın.
                       </p>
                     </div>
                     {error && error ? (
@@ -150,7 +150,7 @@ const Login = (props) => {
                           <Input
                             name="email"
                             className="form-control"
-                            placeholder="Enter email"
+                            placeholder="Email girin"
                             type="email"
                             onChange={validation.handleChange}
                             onBlur={validation.handleBlur}
@@ -173,14 +173,14 @@ const Login = (props) => {
                         <div className="mb-3">
                           <div className="float-end">
                             <Link to="/forgot-password" className="text-muted">
-                              Forgot password?
+                              Şifremi Unuttum?
                             </Link>
                           </div>
                           <Label
                             className="form-label"
                             htmlFor="password-input"
                           >
-                            Password
+                            Şifre
                           </Label>
                           <div className="position-relative auth-pass-inputgroup mb-3">
                             <Input
@@ -188,7 +188,7 @@ const Login = (props) => {
                               value={validation.values.password || ""}
                               type={passwordShow ? "text" : "password"}
                               className="form-control pe-5"
-                              placeholder="Enter Password"
+                              placeholder="Şifre girin"
                               onChange={validation.handleChange}
                               onBlur={validation.handleBlur}
                               invalid={
@@ -226,7 +226,7 @@ const Login = (props) => {
                             className="form-check-label"
                             htmlFor="auth-remember-check"
                           >
-                            Remember me
+                            Beni Hatırla
                           </Label>
                         </div>
 
@@ -243,13 +243,13 @@ const Login = (props) => {
                                 Loading...{" "}
                               </Spinner>
                             ) : null}
-                            Sign In
+                            Giriş Yap
                           </Button>
                         </div>
 
                         <div className="mt-4 text-center">
                           <div className="signin-other-title">
-                            <h5 className="fs-13 mb-4 title">Sign In with</h5>
+                            <h5 className="fs-13 mb-4 title">Giriş Yapın</h5>
                           </div>
                           <div>
                             <Link
@@ -287,13 +287,13 @@ const Login = (props) => {
 
                 <div className="mt-4 text-center">
                   <p className="mb-0">
-                    Don't have an account ?{" "}
+                    Hesabınız yok mu?{" "}
                     <Link
                       to="/register"
                       className="fw-semibold text-primary text-decoration-underline"
                     >
                       {" "}
-                      Signup{" "}
+                      Kayıt Ol{" "}
                     </Link>{" "}
                   </p>
                 </div>

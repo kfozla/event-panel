@@ -7,6 +7,9 @@ export * from "./auth/register/thunk";
 export * from "./auth/forgetpwd/thunk";
 export * from "./auth/profile/thunk";
 
+//Events
+export * from "./events/thunk";
+
 //Calendar
 export * from "./calendar/thunk";
 //Chat
@@ -55,13 +58,13 @@ export * from "./dashboardNFT/thunk";
 export * from "./team/thunk";
 
 // File Manager
-export * from "./fileManager/thunk"
+export * from "./fileManager/thunk";
 
 // To do
-export * from "./todos/thunk"
+export * from "./todos/thunk";
 
 // Jobs
 export * from "./jobs/thunk";
 
 // API Key
-export * from "./apiKey/thunk"; 
+export * from "./apiKey/thunk";

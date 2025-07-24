@@ -22,6 +22,7 @@ const Navdata = () => {
 
   //Calender
   const [isCalender, setCalender] = useState(false);
+  const [isEvent, setEvent] = useState(false);
 
   // Apps
   const [isEmail, setEmail] = useState(false);
@@ -225,6 +226,32 @@ const Navdata = () => {
       stateVariables: isApps,
       subItems: [
         {
+          id: "Event",
+          label: "Etkinlikler",
+          link: "/#",
+          parentId: "apps",
+          isChildItem: true,
+          click: function (e) {
+            e.preventDefault();
+            setEvent(!isEvent);
+          },
+          stateVariables: isEvent,
+          childItems: [
+            {
+              id: 1,
+              label: "Tüm Etkinlikler",
+              link: "/apps-events-all",
+              parentId: "apps",
+            },
+            {
+              id: 2,
+              label: "Etkinlik Ekle",
+              link: "/apps-events-add",
+              parentId: "apps",
+            },
+          ],
+        },
+        {
           id: "calendar",
           label: "Calendar",
           link: "/#",
@@ -420,7 +447,12 @@ const Navdata = () => {
           parentId: "apps",
           stateVariables: isTasks,
           childItems: [
-            { id: 1, label: "Kanban Board", link: "/apps-tasks-kanban", parentId: "apps", },
+            {
+              id: 1,
+              label: "Kanban Board",
+              link: "/apps-tasks-kanban",
+              parentId: "apps",
+            },
             {
               id: 2,
               label: "List View",
@@ -931,7 +963,8 @@ const Navdata = () => {
           label: "Blogs",
           link: "/#",
           isChildItem: true,
-          badgeColor: "success", badgeName: "New",
+          badgeColor: "success",
+          badgeName: "New",
           click: function (e) {
             e.preventDefault();
             setIsBlog(!isBlog);
@@ -939,11 +972,26 @@ const Navdata = () => {
           parentId: "pages",
           stateVariables: isBlog,
           childItems: [
-            { id: 1, label: "List View", link: "/pages-blog-list", parentId: "pages" },
-            { id: 2, label: "Grid View", link: "/pages-blog-grid", parentId: "pages" },
-            { id: 3, label: "Overview", link: "/pages-blog-overview", parentId: "pages" },
-          ]
-        }
+            {
+              id: 1,
+              label: "List View",
+              link: "/pages-blog-list",
+              parentId: "pages",
+            },
+            {
+              id: 2,
+              label: "Grid View",
+              link: "/pages-blog-grid",
+              parentId: "pages",
+            },
+            {
+              id: 3,
+              label: "Overview",
+              link: "/pages-blog-overview",
+              parentId: "pages",
+            },
+          ],
+        },
       ],
     },
     {
@@ -1348,7 +1396,14 @@ const Navdata = () => {
             { id: 16, label: "Radialbar", link: "/charts-apex-radialbar" },
             { id: 17, label: "Radar", link: "/charts-apex-radar" },
             { id: 18, label: "Polar", link: "/charts-apex-polar" },
-            { id: 19, label: "Slope", link: "/charts-apex-slope", parentId: "charts", badgeColor: "success", badgeName: "New" },
+            {
+              id: 19,
+              label: "Slope",
+              link: "/charts-apex-slope",
+              parentId: "charts",
+              badgeColor: "success",
+              badgeName: "New",
+            },
           ],
         },
         {

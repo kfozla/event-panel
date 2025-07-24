@@ -1,0 +1,78 @@
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+//Include Both Helper File with needed methods
+import {
+  getEvents,
+  getEventById,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+} from "../../api/events";
+
+export const getEventList = createAsyncThunk(
+  "events/getEventList",
+  async () => {
+    try {
+      const response = await getEvents();
+      return response.data;
+    } catch (error) {
+      return error;
+    }
+  }
+);
+export const getEventByIdList = createAsyncThunk(
+  "events/getEventById",
+  async (id) => {
+    try {
+      const response = await getEventById(id);
+      return response.data;
+    } catch (error) {
+      return error;
+    }
+  }
+);
+
+export const addEventList = createAsyncThunk(
+  "events/addEvent",
+  async (event) => {
+    try {
+      const response = await createEvent(event);
+      toast.success("event Added Successfully", { autoClose: 3000 });
+      return response.data;
+    } catch (error) {
+      toast.error("event Added Failed", { autoClose: 3000 });
+      return error;
+    }
+  }
+);
+
+export const updateEventList = createAsyncThunk(
+  "events/updateEvent",
+  async (event) => {
+    try {
+      const response = await updateEvent(event);
+      toast.success("event Updated Successfully", { autoClose: 3000 });
+      return response.data;
+    } catch (error) {
+      toast.error("event Updated Failed", { autoClose: 3000 });
+      return error;
+    }
+  }
+);
+
+export const deleteEventList = createAsyncThunk(
+  "events/deleteEvent",
+  async (data) => {
+    try {
+      const response = await deleteEvent(data);
+
+      toast.success("event Delete Successfully", { autoClose: 3000 });
+      return response.data;
+    } catch (error) {
+      toast.error("event Delete Failed", { autoClose: 3000 });
+      return error;
+    }
+  }
+);

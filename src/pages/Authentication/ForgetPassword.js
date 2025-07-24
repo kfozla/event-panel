@@ -1,6 +1,17 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { Row, Col, Alert, Card, CardBody, Container, FormFeedback, Input, Label, Form } from "reactstrap";
+import {
+  Row,
+  Col,
+  Alert,
+  Card,
+  CardBody,
+  Container,
+  FormFeedback,
+  Input,
+  Label,
+  Form,
+} from "reactstrap";
 
 //redux
 import { useSelector, useDispatch } from "react-redux";
@@ -17,11 +28,11 @@ import { userForgetPassword } from "../../slices/thunks";
 
 // import images
 // import profile from "../../assets/images/bg.png";
-import logoLight from "../../assets/images/logo-light.png";
+import logoLight from "../../assets/images/bocek.svg";
 import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
 import { createSelector } from "reselect";
 
-const ForgetPasswordPage = props => {
+const ForgetPasswordPage = (props) => {
   const dispatch = useDispatch();
 
   const validation = useFormik({
@@ -29,31 +40,25 @@ const ForgetPasswordPage = props => {
     enableReinitialize: true,
 
     initialValues: {
-      email: '',
+      email: "",
     },
     validationSchema: Yup.object({
-      email: Yup.string().required("Please Enter Your Email"),
+      email: Yup.string().required("Lütfen email adresinizi girin"),
     }),
     onSubmit: (values) => {
       dispatch(userForgetPassword(values, props.history));
-    }
+    },
   });
 
   const selectLayoutState = (state) => state.ForgetPassword;
-  const selectLayoutProperties = createSelector(
-    selectLayoutState,
-    (state) => ({
-      forgetError: state.forgetError,
-      forgetSuccessMsg: state.forgetSuccessMsg,
-    })
-  );
+  const selectLayoutProperties = createSelector(selectLayoutState, (state) => ({
+    forgetError: state.forgetError,
+    forgetSuccessMsg: state.forgetSuccessMsg,
+  }));
   // Inside your component
-  const {
-    forgetError, forgetSuccessMsg
-  } = useSelector(selectLayoutProperties);
+  const { forgetError, forgetSuccessMsg } = useSelector(selectLayoutProperties);
 
-
-document.title="Reset Password | Velzon - React Admin & Dashboard Template";
+  document.title = "Reset Password | Velzon - React Admin & Dashboard Template";
 
   return (
     <ParticlesAuth>
@@ -64,10 +69,12 @@ document.title="Reset Password | Velzon - React Admin & Dashboard Template";
               <div className="text-center mt-sm-5 mb-4 text-white-50">
                 <div>
                   <Link to="/" className="d-inline-block auth-logo">
-                    <img src={logoLight} alt="" height="20" />
+                    <img src={logoLight} alt="" height="80" />
                   </Link>
                 </div>
-                <p className="mt-3 fs-15 fw-medium">Premium Admin & Dashboard Template</p>
+                <p className="mt-3 fs-15 fw-medium">
+                  Premium Admin & Dashboard Template
+                </p>
               </div>
             </Col>
           </Row>
@@ -75,11 +82,10 @@ document.title="Reset Password | Velzon - React Admin & Dashboard Template";
           <Row className="justify-content-center">
             <Col md={8} lg={6} xl={5}>
               <Card className="mt-4">
-
                 <CardBody className="p-4">
                   <div className="text-center mt-2">
-                    <h5 className="text-primary">Forgot Password?</h5>
-                    <p className="text-muted">Reset password with velzon</p>
+                    <h5 className="text-primary">Şifremi Unuttum?</h5>
+                    <p className="text-muted">Şifreni sıfırla</p>
 
                     <lord-icon
                       src="https://cdn.lordicon.com/rhvddzym.json"
@@ -87,13 +93,15 @@ document.title="Reset Password | Velzon - React Admin & Dashboard Template";
                       colors="primary:#00bd9d"
                       className="avatar-xl"
                       style={{ width: "120px", height: "120px" }}
-                      >
-                    </lord-icon>
-
+                    ></lord-icon>
                   </div>
 
-                  <Alert className="border-0 alert-warning text-center mb-2 mx-2" role="alert">
-                    Enter your email and instructions will be sent to you!
+                  <Alert
+                    className="border-0 alert-warning text-center mb-2 mx-2"
+                    role="alert"
+                  >
+                    Email adresinizi girin, şifre sıfırlamak için bir bağlantı
+                    göndereceğiz.
                   </Alert>
                   <div className="p-2">
                     {forgetError && forgetError ? (
@@ -118,22 +126,28 @@ document.title="Reset Password | Velzon - React Admin & Dashboard Template";
                         <Input
                           name="email"
                           className="form-control"
-                          placeholder="Enter email"
+                          placeholder="Email girin"
                           type="email"
                           onChange={validation.handleChange}
                           onBlur={validation.handleBlur}
                           value={validation.values.email || ""}
                           invalid={
-                            validation.touched.email && validation.errors.email ? true : false
+                            validation.touched.email && validation.errors.email
+                              ? true
+                              : false
                           }
                         />
                         {validation.touched.email && validation.errors.email ? (
-                          <FormFeedback type="invalid"><div>{validation.errors.email}</div></FormFeedback>
+                          <FormFeedback type="invalid">
+                            <div>{validation.errors.email}</div>
+                          </FormFeedback>
                         ) : null}
                       </div>
 
                       <div className="text-center mt-4">
-                        <button className="btn btn-success w-100" type="submit">Send Reset Link</button>
+                        <button className="btn btn-success w-100" type="submit">
+                          Sıfırlama bağlantısı gönder
+                        </button>
                       </div>
                     </Form>
                   </div>
@@ -141,9 +155,17 @@ document.title="Reset Password | Velzon - React Admin & Dashboard Template";
               </Card>
 
               <div className="mt-4 text-center">
-                <p className="mb-0">Wait, I remember my password... <Link to="/login" className="fw-semibold text-primary text-decoration-underline"> Click here </Link> </p>
+                <p className="mb-0">
+                  Şifremi hatırlıyorum...{" "}
+                  <Link
+                    to="/login"
+                    className="fw-semibold text-primary text-decoration-underline"
+                  >
+                    {" "}
+                    Buraya tıklayın{" "}
+                  </Link>{" "}
+                </p>
               </div>
-
             </Col>
           </Row>
         </Container>
