@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 
 //Events
+import UpdateEvent from "../pages/Events/UpdateEvent/index";
 import AllEvents from "../pages/Events/AllEvents/index";
 import AddEvent from "../pages/Events/AddEvent/index";
 import EventOverview from "../pages/Events/EventOverview/index";
@@ -264,8 +265,9 @@ const authProtectedRoutes = [
 
   //Events
   { path: "/apps-events-all", component: <AllEvents /> },
-  { path: "/apps-events-overview", component: <EventOverview /> },
+  { path: "/apps-events-overview/:id", component: <EventOverview /> },
   { path: "/apps-events-add", component: <AddEvent /> },
+  { path: "/apps-events-update/:id", component: <UpdateEvent /> },
 
   { path: "/apps-calendar", component: <Calendar /> },
   { path: "/apps-calendar-month-grid", component: <MonthGrid /> },

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Card,
@@ -9,6 +9,7 @@ import {
   Input,
   Label,
   Row,
+  Select as SelectComponent,
 } from "reactstrap";
 import BreadCrumb from "../../../Components/Common/BreadCrumb";
 
@@ -21,37 +22,35 @@ import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 import Dropzone from "react-dropzone";
 
-import { createEvent } from "../../../api/events";
-import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { useNavigate, useParams } from "react-router-dom";
+import { getEventById, updateEvent } from "../../../api/events";
+import { ToastContainer, toast } from "react-toastify";
 
-const AddEvent = () => {
-  const SingleOptions = [
-    { value: "Watches", label: "Watches" },
-    { value: "Headset", label: "Headset" },
-    { value: "Sweatshirt", label: "Sweatshirt" },
-    { value: "20% off", label: "20% off" },
-    { value: "4 star", label: "4 star" },
-  ];
-  const [eventData, setEventData] = useState({
-    name: "",
-    description: "",
-    startTime: "",
-    endTime: "",
-    thumbnailUrl: "",
-  });
-  const navigate = useNavigate();
-
-  // CKEditor için ayrı state
+const UpdateEvent = () => {
+  const { id } = useParams();
+  const [eventData, setEventData] = useState({});
   const [editorData, setEditorData] = useState("");
-
-  // Başlama ve bitiş tarihi için ayrı state
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-
-  // Kapak resmi için url
   const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const navigate = useNavigate();
+
   const [selectedTheme, setSelectedTheme] = useState("");
+  useEffect(() => {
+    async function fetchEvent() {
+      try {
+        const data = await getEventById(id);
+        setEventData(data);
+        setEditorData(data.description || "");
+        setStartDate(data.startTime ? [data.startTime] : null);
+        setEndDate(data.endTime ? [data.endTime] : null);
+        setThumbnailUrl(data.thumbnailUrl || "");
+      } catch (err) {
+        console.error("Etkinlik verisi alınamadı:", err);
+      }
+    }
+    if (id) fetchEvent();
+  }, [id]);
 
   // Form submit fonksiyonu
   const handleSubmit = async (e) => {
@@ -69,9 +68,9 @@ const AddEvent = () => {
       thumbnailUrl: thumbnailUrl,
     };
     try {
-      await createEvent(payload);
+      await updateEvent(id, payload);
       navigate("/apps-events-all"); // Yönlendirmek istediğiniz sayfanın path'i
-      // Başarılı ekleme sonrası istersen yönlendirme veya mesaj ekleyebilirsin
+      // Başarılı güncelleme sonrası istersen yönlendirme veya mesaj ekleyebilirsin
     } catch (err) {
       // Hata yönetimi
       console.error(err);
@@ -116,7 +115,7 @@ const AddEvent = () => {
       <ToastContainer closeButton={false} />
       <div className="page-content">
         <Container fluid>
-          <BreadCrumb title="Etkinlik Ekle" pageTitle="Etkinlikler" />
+          <BreadCrumb title="Etkinlik Düzenle" pageTitle="Etkinlikler" />
           <Row>
             <Col lg={10}>
               <form onSubmit={handleSubmit}>
@@ -265,7 +264,7 @@ const AddEvent = () => {
                   </button>
 
                   <button type="submit" className="btn btn-success w-sm">
-                    Ekle
+                    Düzenle
                   </button>
                 </div>
               </form>
@@ -348,4 +347,4 @@ const AddEvent = () => {
   );
 };
 
-export default AddEvent;
+export default UpdateEvent;

@@ -16,8 +16,11 @@ import classnames from "classnames";
 import slack from "../../../assets/images/brands/slack.png";
 import OverviewTab from "./OverviewTab";
 import DocumentsTab from "./DocumentsTab";
+import { getEventById } from "../../../api/events";
+import { useEffect } from "react";
+import TeamTab from "./TeamTab";
 
-const Section = () => {
+const Section = ({ eventId }) => {
   //Tab
   const [activeTab, setActiveTab] = useState("1");
   const toggleTab = (tab) => {
@@ -25,6 +28,19 @@ const Section = () => {
       setActiveTab(tab);
     }
   };
+  const [eventData, setEventData] = useState(null);
+  useEffect(() => {
+    try {
+      const fetchEvent = async () => {
+        const eventData = await getEventById(eventId);
+        setEventData(eventData);
+        console.log("Event Data:", eventData);
+      };
+      fetchEvent();
+    } catch (error) {
+      console.error("Error fetching event data:", error);
+    }
+  }, []);
   return (
     <React.Fragment>
       <Row>
@@ -37,35 +53,73 @@ const Section = () => {
                     <Row className="align-items-center g-3">
                       <div className="col-md-auto">
                         <div className="avatar-md">
-                          <div className="avatar-title bg-white rounded-circle">
-                            <img src={slack} alt="" className="avatar-xs" />
-                          </div>
+                          {eventData && eventData.thumbnailUrl ? (
+                            <img
+                              src={eventData.thumbnailUrl}
+                              alt="thumbnail"
+                              className="avatar-xs rounded-circle"
+                              style={{ width: "60px", height: "60px" }}
+                            />
+                          ) : (
+                            <div className="avatar-title bg-gray rounded avatar-xs"></div>
+                          )}
                         </div>
                       </div>
                       <div className="col-md">
                         <div>
                           <h4 className="fw-bold">
-                            Velzon - Admin & Dashboard
+                            {eventData ? eventData.name : ""}
                           </h4>
                           <div className="hstack gap-3 flex-wrap">
                             <div>
                               Eklenme Tarihi :{" "}
                               <span className="fw-medium">
-                                24 Temmuz 2025 14:30
+                                {eventData && eventData.createdOn
+                                  ? new Date(
+                                      eventData.createdOn
+                                    ).toLocaleString("tr-TR", {
+                                      year: "numeric",
+                                      month: "2-digit",
+                                      day: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                  : ""}
                               </span>
                             </div>
                             <div className="vr"></div>
                             <div>
                               Başlama Tarihi :{" "}
                               <span className="fw-medium">
-                                24 Temmuz 2025 14:30
+                                {eventData && eventData.startTime
+                                  ? new Date(
+                                      eventData.startTime
+                                    ).toLocaleString("tr-TR", {
+                                      year: "numeric",
+                                      month: "2-digit",
+                                      day: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                  : ""}
                               </span>
                             </div>
                             <div className="vr"></div>
                             <div>
                               Bitiş Tarihi :{" "}
                               <span className="fw-medium">
-                                24 Temmuz 2025 14:30
+                                {eventData && eventData.endTime
+                                  ? new Date(eventData.endTime).toLocaleString(
+                                      "tr-TR",
+                                      {
+                                        year: "numeric",
+                                        month: "2-digit",
+                                        day: "2-digit",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      }
+                                    )
+                                  : ""}
                               </span>
                             </div>
                           </div>
@@ -126,6 +180,20 @@ const Section = () => {
                       Belgeler
                     </NavLink>
                   </NavItem>
+                  <NavItem>
+                    <NavLink
+                      className={classnames(
+                        { active: activeTab === "3" },
+                        "fw-semibold"
+                      )}
+                      onClick={() => {
+                        toggleTab("3");
+                      }}
+                      href="#"
+                    >
+                      Kişiler
+                    </NavLink>
+                  </NavItem>
                 </Nav>
               </CardBody>
             </div>
@@ -136,10 +204,18 @@ const Section = () => {
         <Col lg={12}>
           <TabContent activeTab={activeTab} className="text-muted">
             <TabPane tabId="1">
-              <OverviewTab />
+              <OverviewTab
+                eventDescription={eventData ? eventData.description : ""}
+                eventCreatedOn={eventData ? eventData.createdOn : ""}
+                eventStartTime={eventData ? eventData.startTime : ""}
+                eventEndTime={eventData ? eventData.endTime : ""}
+              />
             </TabPane>
             <TabPane tabId="2">
               <DocumentsTab />
+            </TabPane>
+            <TabPane tabId="3">
+              <TeamTab />
             </TabPane>
           </TabContent>
         </Col>

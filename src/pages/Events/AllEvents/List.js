@@ -11,70 +11,13 @@ import {
   Row,
   UncontrolledDropdown,
 } from "reactstrap";
-import DeleteModal from "../../../Components/Common/DeleteModal";
-import { ToastContainer } from "react-toastify";
 
-//redux
-import { useSelector, useDispatch } from "react-redux";
-
-//Import Icons
-import FeatherIcon from "feather-icons-react";
-
-//import action
-import { getEventList, deleteEventList } from "../../../slices/thunks";
-import { createSelector } from "reselect";
-import { use } from "react";
+import EventTable from "./EventTable";
 
 const List = () => {
-  const dispatch = useDispatch();
-
-  const selectDashboardData = createSelector(
-    (state) => state.Events,
-    (Events) => Events.eventLists
-  );
-  // Inside your component
-  const eventLists = useSelector(selectDashboardData);
-
-  const [event, setEvent] = useState(null);
-  const [deleteModal, setDeleteModal] = useState(false);
-
-  useEffect(() => {
-    dispatch(getEventList());
-  }, [dispatch]);
-
-  useEffect(() => {
-    setEvent(eventLists);
-  }, [eventLists]);
-
-  // delete
-  const onClickData = (event) => {
-    setEvent(event);
-    setDeleteModal(true);
-  };
-  const handleDeleteEventList = () => {
-    if (event) {
-      dispatch(deleteEventList(event.id));
-      setDeleteModal(false);
-    }
-  };
-
-  const activebtn = (ele) => {
-    if (ele.closest("button").classList.contains("active")) {
-      ele.closest("button").classList.remove("active");
-    } else {
-      ele.closest("button").classList.add("active");
-    }
-  };
-  console.log("eventLists", eventLists);
   return (
     <React.Fragment>
-      <ToastContainer closeButton={false} />
-      <DeleteModal
-        show={deleteModal}
-        onDeleteClick={() => handleDeleteEventList()}
-        onCloseClick={() => setDeleteModal(false)}
-      />
-      <Row className="g-4 mb-3">
+      <Row className="g-4 mb-3 pb-3">
         <div className="col-sm-auto">
           <div>
             <Link to="/apps-events-add" className="btn btn-soft-secondary">
@@ -111,7 +54,8 @@ const List = () => {
           </div>
         </div>
       </Row>
-
+      <EventTable />
+      {/* Render the EventTable component to display the list of events 
       <div className="row">
         {(eventLists || []).map((item, index) => (
           <React.Fragment key={index}>
@@ -156,11 +100,17 @@ const List = () => {
                             </DropdownToggle>
 
                             <DropdownMenu className="dropdown-menu-end">
-                              <DropdownItem href="apps-projects-overview">
+                              <DropdownItem
+                                tag={Link}
+                                to={`/apps-events-overview/${item.id}`}
+                              >
                                 <i className="ri-eye-fill align-bottom me-2 text-muted"></i>{" "}
                                 Görüntüle
                               </DropdownItem>
-                              <DropdownItem href="apps-projects-create">
+                              <DropdownItem
+                                tag={Link}
+                                to={`/apps-events-update/${item.id}`}
+                              >
                                 <i className="ri-pencil-fill align-bottom me-2 text-muted"></i>{" "}
                                 Düzenle
                               </DropdownItem>
@@ -182,22 +132,26 @@ const List = () => {
                     <div className="d-flex mb-2">
                       <div className="flex-shrink-0 me-3">
                         <div className="avatar-sm">
-                          <img
-                            src={item.thumbnailUrl}
-                            alt=""
-                            className="img-fluid rounded "
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                            }}
-                          />
+                          {item.thumbnailUrl ? (
+                            <img
+                              src={item.thumbnailUrl}
+                              alt=""
+                              className="img-fluid rounded "
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
+                            />
+                          ) : (
+                            <div className="avatar-title bg-gray rounded "></div>
+                          )}
                         </div>
                       </div>
                       <div className="flex-grow-1">
                         <h5 className="mb-1 fs-15">
                           <Link
-                            to="/apps-events-overview"
+                            to={`/apps-events-overview/${item.id}`}
                             className="text-dark"
                           >
                             {item.name}
@@ -301,7 +255,7 @@ const List = () => {
             </li>
           </ul>
         </Col>
-      </Row>
+      </Row>*/}
     </React.Fragment>
   );
 };

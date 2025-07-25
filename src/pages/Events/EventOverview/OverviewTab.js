@@ -11,8 +11,23 @@ import {
   Row,
   UncontrolledDropdown,
 } from "reactstrap";
+import SimpleBar from "simplebar-react";
+import avatar8 from "../../../assets/images/users/avatar-8.jpg";
+import avatar10 from "../../../assets/images/users/avatar-10.jpg";
+import avatar6 from "../../../assets/images/users/avatar-6.jpg";
+import avatar2 from "../../../assets/images/users/avatar-2.jpg";
+import avatar3 from "../../../assets/images/users/avatar-3.jpg";
+import avatar4 from "../../../assets/images/users/avatar-4.jpg";
+import avatar7 from "../../../assets/images/users/avatar-7.jpg";
+import image4 from "../../../assets/images/small/img-4.jpg";
+import image5 from "../../../assets/images/small/img-5.jpg";
 
-const OverviewTab = () => {
+const OverviewTab = ({
+  eventDescription,
+  eventCreatedOn,
+  eventStartTime,
+  eventEndTime,
+}) => {
   return (
     <React.Fragment>
       <Row>
@@ -21,33 +36,7 @@ const OverviewTab = () => {
             <CardBody>
               <div className="text-muted">
                 <h6 className="mb-3 fw-semibold text-uppercase">Açıklama</h6>
-                <p>
-                  It will be as simple as occidental in fact, it will be
-                  Occidental. To an English person, it will seem like simplified
-                  English, as a skeptical Cambridge friend of mine told me what
-                  Occidental is. The European languages are members of the same
-                  family. Their separate existence is a myth. For science,
-                  music, sport, etc, Europe uses the same vocabulary. The
-                  languages only differ in their grammar, their pronunciation
-                  and their most common words.
-                </p>
-
-                <ul className="ps-4 vstack gap-2">
-                  <li>Product Design, Figma (Software), Prototype</li>
-                  <li>Four Dashboards : Ecommerce, Analytics, Project,etc.</li>
-                  <li>Create calendar, chat and email app pages.</li>
-                  <li>Add authentication pages.</li>
-                  <li>Content listing.</li>
-                </ul>
-
-                <div>
-                  <button
-                    type="button"
-                    className="btn btn-link link-secondary p-0"
-                  >
-                    Read more
-                  </button>
-                </div>
+                <div dangerouslySetInnerHTML={{ __html: eventDescription }} />
 
                 <div className="pt-3 border-top border-top-dashed mt-4">
                   <Row>
@@ -56,7 +45,16 @@ const OverviewTab = () => {
                         <p className="mb-2 text-uppercase fw-medium">
                           Eklenme Tarihi :
                         </p>
-                        <h5 className="fs-15 mb-0">24 Temmuz 2025 14:30</h5>
+                        <h5 className="fs-15 mb-0">
+                          {eventCreatedOn &&
+                            new Date(eventCreatedOn).toLocaleString("tr-TR", {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                        </h5>
                       </div>
                     </Col>
                     <Col lg={3} sm={6}>
@@ -64,7 +62,16 @@ const OverviewTab = () => {
                         <p className="mb-2 text-uppercase fw-medium">
                           Başlama Tarihi :
                         </p>
-                        <h5 className="fs-15 mb-0">24 Temmuz 2025 14:30</h5>
+                        <h5 className="fs-15 mb-0">
+                          {eventStartTime &&
+                            new Date(eventStartTime).toLocaleString("tr-TR", {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                        </h5>
                       </div>
                     </Col>
                     <Col lg={3} sm={6}>
@@ -72,7 +79,16 @@ const OverviewTab = () => {
                         <p className="mb-2 text-uppercase fw-medium">
                           Bitiş Tarihi :
                         </p>
-                        <h5 className="fs-15 mb-0">24 Temmuz 2025 14:30</h5>
+                        <h5 className="fs-15 mb-0">
+                          {eventEndTime &&
+                            new Date(eventEndTime).toLocaleString("tr-TR", {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                        </h5>
                       </div>
                     </Col>
                   </Row>
@@ -84,246 +100,120 @@ const OverviewTab = () => {
 
         <Col xl={3} lg={4}>
           <Card>
-            <CardHeader className="align-items-center d-flex border-bottom-dashed">
-              <h4 className="card-title mb-0 flex-grow-1">Belgeler</h4>
-              <div className="flex-shrink-0">
-                <button type="button" className="btn btn-soft-primary btn-sm">
-                  <i className="ri-upload-2-fill me-1 align-bottom"></i> Yükle
-                </button>
-              </div>
+            <CardHeader className="align-items-center d-flex border-bottom-dashed text-center">
+              <h4 className="card-title mb-0 flex-grow-1">Kişiler</h4>
             </CardHeader>
 
             <CardBody>
-              <div className="vstack gap-2">
-                <div className="border rounded border-dashed p-2">
+              <SimpleBar
+                data-simplebar
+                style={{ height: "100%", maxHeight: "420px" }}
+                className="mx-n3 px-3"
+              >
+                <div className="vstack gap-3">
                   <div className="d-flex align-items-center">
-                    <div className="flex-shrink-0 me-3">
-                      <div className="avatar-sm">
-                        <div className="avatar-title bg-light text-primary rounded fs-24">
-                          <i className="ri-folder-zip-line"></i>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex-grow-1 overflow-hidden">
-                      <h5 className="fs-13 mb-1">
-                        <Link
-                          to="#"
-                          className="text-dark text-truncate d-block"
-                        >
-                          App-pages.zip
+                    <div className="flex-grow-1">
+                      <h5 className="fs-13 mb-0">
+                        <Link to="#" className="text-dark d-block">
+                          Nancy Martino
                         </Link>
                       </h5>
-                      <div>2.2MB</div>
                     </div>
-                    <div className="flex-shrink-0 ms-2">
-                      <div className="d-flex gap-1">
-                        <button
-                          type="button"
-                          className="btn btn-icon text-muted btn-sm fs-18"
-                        >
-                          <i className="ri-download-2-line"></i>
+                    <div className="flex-shrink-0">
+                      <div className="d-flex align-items-center gap-1">
+                        <button type="button" className="btn btn-light btn-sm">
+                          Yükledikleri
                         </button>
-                        <UncontrolledDropdown>
-                          <DropdownToggle
-                            tag="button"
-                            className="btn btn-icon text-muted btn-sm fs-18 dropdown"
-                            type="button"
-                          >
-                            <i className="ri-more-fill"></i>
-                          </DropdownToggle>
-                          <DropdownMenu>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-pencil-fill align-bottom me-2 text-muted"></i>{" "}
-                                Rename
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-delete-bin-fill align-bottom me-2 text-muted"></i>{" "}
-                                Delete
-                              </DropdownItem>
-                            </li>
-                          </DropdownMenu>
-                        </UncontrolledDropdown>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="border rounded border-dashed p-2">
                   <div className="d-flex align-items-center">
-                    <div className="flex-shrink-0 me-3">
-                      <div className="avatar-sm">
-                        <div className="avatar-title bg-light text-primary rounded fs-24">
-                          <i className="ri-file-ppt-2-line"></i>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex-grow-1 overflow-hidden">
-                      <h5 className="fs-13 mb-1">
-                        <Link
-                          to="#"
-                          className="text-dark text-truncate d-block"
-                        >
-                          Velzon-admin.ppt
+                    <div className="flex-grow-1">
+                      <h5 className="fs-13 mb-0">
+                        <Link to="#" className="text-dark d-block">
+                          Henry Baird
                         </Link>
                       </h5>
-                      <div>2.4MB</div>
                     </div>
-                    <div className="flex-shrink-0 ms-2">
-                      <div className="d-flex gap-1">
-                        <button
-                          type="button"
-                          className="btn btn-icon text-muted btn-sm fs-18"
-                        >
-                          <i className="ri-download-2-line"></i>
+                    <div className="flex-shrink-0">
+                      <div className="d-flex align-items-center gap-1">
+                        <button type="button" className="btn btn-light btn-sm">
+                          Yükledikleri
                         </button>
-                        <UncontrolledDropdown>
-                          <DropdownToggle
-                            tag="button"
-                            className="btn btn-icon text-muted btn-sm fs-18 dropdown"
-                            type="button"
-                          >
-                            <i className="ri-more-fill"></i>
-                          </DropdownToggle>
-                          <DropdownMenu>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-pencil-fill align-bottom me-2 text-muted"></i>{" "}
-                                Rename
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-delete-bin-fill align-bottom me-2 text-muted"></i>{" "}
-                                Delete
-                              </DropdownItem>
-                            </li>
-                          </DropdownMenu>
-                        </UncontrolledDropdown>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="border rounded border-dashed p-2">
                   <div className="d-flex align-items-center">
-                    <div className="flex-shrink-0 me-3">
-                      <div className="avatar-sm">
-                        <div className="avatar-title bg-light text-primary rounded fs-24">
-                          <i className="ri-folder-zip-line"></i>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex-grow-1 overflow-hidden">
-                      <h5 className="fs-13 mb-1">
-                        <Link
-                          to="#"
-                          className="text-dark text-truncate d-block"
-                        >
-                          Images.zip
+                    <div className="flex-grow-1">
+                      <h5 className="fs-13 mb-0">
+                        <Link to="#" className="text-dark d-block">
+                          Frank Hook
                         </Link>
                       </h5>
-                      <div>1.2MB</div>
                     </div>
-                    <div className="flex-shrink-0 ms-2">
-                      <div className="d-flex gap-1">
-                        <button
-                          type="button"
-                          className="btn btn-icon text-muted btn-sm fs-18"
-                        >
-                          <i className="ri-download-2-line"></i>
+                    <div className="flex-shrink-0">
+                      <div className="d-flex align-items-center gap-1">
+                        <button type="button" className="btn btn-light btn-sm">
+                          Yükledikleri
                         </button>
-                        <UncontrolledDropdown>
-                          <DropdownToggle
-                            tag="button"
-                            className="btn btn-icon text-muted btn-sm fs-18 dropdown"
-                            type="button"
-                          >
-                            <i className="ri-more-fill"></i>
-                          </DropdownToggle>
-                          <DropdownMenu>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-pencil-fill align-bottom me-2 text-muted"></i>{" "}
-                                Rename
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-delete-bin-fill align-bottom me-2 text-muted"></i>{" "}
-                                Delete
-                              </DropdownItem>
-                            </li>
-                          </DropdownMenu>
-                        </UncontrolledDropdown>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="border rounded border-dashed p-2">
                   <div className="d-flex align-items-center">
-                    <div className="flex-shrink-0 me-3">
-                      <div className="avatar-sm">
-                        <div className="avatar-title bg-light text-primary rounded fs-24">
-                          <i className="ri-image-2-line"></i>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex-grow-1 overflow-hidden">
-                      <h5 className="fs-13 mb-1">
-                        <Link
-                          to="#"
-                          className="text-dark text-truncate d-block"
-                        >
-                          bg-pattern.png
+                    <div className="flex-grow-1">
+                      <h5 className="fs-13 mb-0">
+                        <Link to="#" className="text-dark d-block">
+                          Jennifer Carter
                         </Link>
                       </h5>
-                      <div>1.1MB</div>
                     </div>
-                    <div className="flex-shrink-0 ms-2">
-                      <div className="d-flex gap-1">
-                        <button
-                          type="button"
-                          className="btn btn-icon text-muted btn-sm fs-18"
-                        >
-                          <i className="ri-download-2-line"></i>
+                    <div className="flex-shrink-0">
+                      <div className="d-flex align-items-center gap-1">
+                        <button type="button" className="btn btn-light btn-sm">
+                          Yükledikleri
                         </button>
-                        <UncontrolledDropdown>
-                          <DropdownToggle
-                            tag="button"
-                            className="btn btn-icon text-muted btn-sm fs-18 dropdown"
-                            type="button"
-                          >
-                            <i className="ri-more-fill"></i>
-                          </DropdownToggle>
-                          <DropdownMenu>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-pencil-fill align-bottom me-2 text-muted"></i>{" "}
-                                Rename
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-delete-bin-fill align-bottom me-2 text-muted"></i>{" "}
-                                Delete
-                              </DropdownItem>
-                            </li>
-                          </DropdownMenu>
-                        </UncontrolledDropdown>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="d-flex align-items-center">
+                    <div className="flex-grow-1">
+                      <h5 className="fs-13 mb-0">
+                        <Link to="#" className="text-dark d-block">
+                          Joseph Parker
+                        </Link>
+                      </h5>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <div className="d-flex align-items-center gap-1">
+                        <button type="button" className="btn btn-light btn-sm">
+                          Yükledikleri
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="d-flex align-items-center">
+                    <div className="flex-grow-1">
+                      <h5 className="fs-13 mb-0">
+                        <Link to="#" className="text-dark d-block">
+                          Alexis Clarke
+                        </Link>
+                      </h5>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <div className="d-flex align-items-center gap-1">
+                        <button type="button" className="btn btn-light btn-sm">
+                          Yükledikleri
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="mt-2 text-center">
-                  <button type="button" className="btn btn-primary">
-                    View more
-                  </button>
-                </div>
-              </div>
+              </SimpleBar>
             </CardBody>
           </Card>
         </Col>
