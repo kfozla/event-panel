@@ -11,16 +11,22 @@ import {
   TabPane,
 } from "reactstrap";
 import classnames from "classnames";
+import { Link } from "react-router-dom";
 
 //import images
 import slack from "../../../assets/images/brands/slack.png";
 import OverviewTab from "./OverviewTab";
 import DocumentsTab from "./DocumentsTab";
-import { getEventById } from "../../../api/events";
+import { getEventById, deleteEvent } from "../../../api/events";
 import { useEffect } from "react";
 import TeamTab from "./TeamTab";
+import DeleteModal from "../../../Components/Common/DeleteModal";
+import { ToastContainer, toast } from "react-toastify";
+import { set } from "lodash";
+import { useNavigate } from "react-router-dom";
 
 const Section = ({ eventId }) => {
+  const navigate = useNavigate();
   //Tab
   const [activeTab, setActiveTab] = useState("1");
   const toggleTab = (tab) => {
@@ -29,6 +35,31 @@ const Section = ({ eventId }) => {
     }
   };
   const [eventData, setEventData] = useState(null);
+  // Delete Task
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [event, setEvent] = useState(null);
+  const onClickData = (eventData) => {
+    setEvent(eventData);
+    setDeleteModal(true);
+  };
+  // Silme işlemi
+
+  const handleDeleteEventList = () => {
+    if (event) {
+      deleteEvent(event.id)
+        .then(() => {
+          toast.success("Event deleted successfully");
+          setTimeout(() => {
+            navigate("/apps-events-all");
+          }, 2400);
+        })
+        .catch((error) => {
+          toast.error("Error deleting event");
+        });
+      setDeleteModal(false);
+    }
+  };
+
   useEffect(() => {
     try {
       const fetchEvent = async () => {
@@ -43,6 +74,12 @@ const Section = ({ eventId }) => {
   }, []);
   return (
     <React.Fragment>
+      <ToastContainer closeButton={false} />
+      <DeleteModal
+        show={deleteModal}
+        onDeleteClick={() => handleDeleteEventList()}
+        onCloseClick={() => setDeleteModal(false)}
+      />
       <Row>
         <Col lg={12}>
           <Card className="mt-n4 mx-n4 border-0">
@@ -122,6 +159,24 @@ const Section = ({ eventId }) => {
                                   : ""}
                               </span>
                             </div>
+
+                            <div
+                              className="d-flex justify-content-end gap-2 "
+                              style={{ marginLeft: "auto" }}
+                            >
+                              <Link
+                                to={`/apps-events-update/${eventId}`}
+                                className="btn btn-light view-btn"
+                              >
+                                Düzenle
+                              </Link>
+                              <Link
+                                className="btn btn-danger view-btn"
+                                onClick={() => onClickData(eventData)}
+                              >
+                                Sil
+                              </Link>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -177,7 +232,7 @@ const Section = ({ eventId }) => {
                       }}
                       href="#"
                     >
-                      Belgeler
+                      Yüklemeler
                     </NavLink>
                   </NavItem>
                   <NavItem>
@@ -209,13 +264,16 @@ const Section = ({ eventId }) => {
                 eventCreatedOn={eventData ? eventData.createdOn : ""}
                 eventStartTime={eventData ? eventData.startTime : ""}
                 eventEndTime={eventData ? eventData.endTime : ""}
+                eventDomainName={eventData ? eventData.domainName : ""}
+                eventTheme={eventData ? eventData.theme : ""}
+                eventPersonList={eventData ? eventData.personList : []}
               />
             </TabPane>
             <TabPane tabId="2">
-              <DocumentsTab />
+              <DocumentsTab mediaList={eventData ? eventData.mediaList : []} />
             </TabPane>
             <TabPane tabId="3">
-              <TeamTab />
+              <TeamTab personList={eventData ? eventData.personList : []} />
             </TabPane>
           </TabContent>
         </Col>

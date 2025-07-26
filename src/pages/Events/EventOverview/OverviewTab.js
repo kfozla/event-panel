@@ -27,6 +27,9 @@ const OverviewTab = ({
   eventCreatedOn,
   eventStartTime,
   eventEndTime,
+  eventDomainName,
+  eventTheme,
+  eventPersonList,
 }) => {
   return (
     <React.Fragment>
@@ -40,23 +43,6 @@ const OverviewTab = ({
 
                 <div className="pt-3 border-top border-top-dashed mt-4">
                   <Row>
-                    <Col lg={3} sm={6}>
-                      <div>
-                        <p className="mb-2 text-uppercase fw-medium">
-                          Eklenme Tarihi :
-                        </p>
-                        <h5 className="fs-15 mb-0">
-                          {eventCreatedOn &&
-                            new Date(eventCreatedOn).toLocaleString("tr-TR", {
-                              year: "numeric",
-                              month: "2-digit",
-                              day: "2-digit",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                        </h5>
-                      </div>
-                    </Col>
                     <Col lg={3} sm={6}>
                       <div>
                         <p className="mb-2 text-uppercase fw-medium">
@@ -91,6 +77,20 @@ const OverviewTab = ({
                         </h5>
                       </div>
                     </Col>
+                    <Col lg={3} sm={6}>
+                      <div>
+                        <p className="mb-2 text-uppercase fw-medium">Tema :</p>
+                        <h5 className="fs-15 mb-0">{eventTheme}</h5>
+                      </div>
+                    </Col>
+                    <Col lg={3} sm={6}>
+                      <div>
+                        <p className="mb-2 text-uppercase fw-medium">
+                          Domain Adı :
+                        </p>
+                        <h5 className="fs-15 mb-0">{eventDomainName}</h5>
+                      </div>
+                    </Col>
                   </Row>
                 </div>
               </div>
@@ -111,107 +111,33 @@ const OverviewTab = ({
                 className="mx-n3 px-3"
               >
                 <div className="vstack gap-3">
-                  <div className="d-flex align-items-center">
-                    <div className="flex-grow-1">
-                      <h5 className="fs-13 mb-0">
-                        <Link to="#" className="text-dark d-block">
-                          Nancy Martino
-                        </Link>
-                      </h5>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <div className="d-flex align-items-center gap-1">
-                        <button type="button" className="btn btn-light btn-sm">
-                          Yükledikleri
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="d-flex align-items-center">
-                    <div className="flex-grow-1">
-                      <h5 className="fs-13 mb-0">
-                        <Link to="#" className="text-dark d-block">
-                          Henry Baird
-                        </Link>
-                      </h5>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <div className="d-flex align-items-center gap-1">
-                        <button type="button" className="btn btn-light btn-sm">
-                          Yükledikleri
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="d-flex align-items-center">
-                    <div className="flex-grow-1">
-                      <h5 className="fs-13 mb-0">
-                        <Link to="#" className="text-dark d-block">
-                          Frank Hook
-                        </Link>
-                      </h5>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <div className="d-flex align-items-center gap-1">
-                        <button type="button" className="btn btn-light btn-sm">
-                          Yükledikleri
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="d-flex align-items-center">
-                    <div className="flex-grow-1">
-                      <h5 className="fs-13 mb-0">
-                        <Link to="#" className="text-dark d-block">
-                          Jennifer Carter
-                        </Link>
-                      </h5>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <div className="d-flex align-items-center gap-1">
-                        <button type="button" className="btn btn-light btn-sm">
-                          Yükledikleri
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="d-flex align-items-center">
-                    <div className="flex-grow-1">
-                      <h5 className="fs-13 mb-0">
-                        <Link to="#" className="text-dark d-block">
-                          Joseph Parker
-                        </Link>
-                      </h5>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <div className="d-flex align-items-center gap-1">
-                        <button type="button" className="btn btn-light btn-sm">
-                          Yükledikleri
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="d-flex align-items-center">
-                    <div className="flex-grow-1">
-                      <h5 className="fs-13 mb-0">
-                        <Link to="#" className="text-dark d-block">
-                          Alexis Clarke
-                        </Link>
-                      </h5>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <div className="d-flex align-items-center gap-1">
-                        <button type="button" className="btn btn-light btn-sm">
-                          Yükledikleri
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  {eventPersonList && eventPersonList.length > 0
+                    ? eventPersonList.map((person, index) => {
+                        return (
+                          <div className="vstack gap-3" key={index}>
+                            <div className="d-flex align-items-center">
+                              <div className="flex-grow-1">
+                                <h5 className="fs-13 mb-0">
+                                  <Link to="#" className="text-dark d-block">
+                                    {person || "Nancy Martino"}
+                                  </Link>
+                                </h5>
+                              </div>
+                              <div className="flex-shrink-0">
+                                <div className="d-flex align-items-center gap-1">
+                                  <button
+                                    type="button"
+                                    className="btn btn-light btn-sm"
+                                  >
+                                    Yükledikleri
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    : null}
                 </div>
               </SimpleBar>
             </CardBody>

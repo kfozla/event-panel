@@ -66,19 +66,6 @@ const AllTasks = () => {
     setEvent(eventLists);
   }, [eventLists]);
 
-  // delete
-  const onClickData = (event) => {
-    setEvent(event);
-    setDeleteModal(true);
-  };
-  const handleDeleteEventList = () => {
-    if (event) {
-      dispatch(deleteEventList(event.id));
-      setDeleteModal(false);
-    }
-  };
-
-  const [isEdit, setIsEdit] = useState(false);
   const [task, setTask] = useState([]);
   const [TaskList, setTaskList] = useState([]);
 

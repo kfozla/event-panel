@@ -12,7 +12,8 @@ import {
   UncontrolledDropdown,
 } from "reactstrap";
 
-const DocumentsTab = () => {
+const DocumentsTab = ({ mediaList }) => {
+  console.log("Media List:", mediaList);
   return (
     <React.Fragment>
       <Card>
@@ -36,324 +37,69 @@ const DocumentsTab = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div className="avatar-sm">
-                            <div className="avatar-title bg-light text-primary rounded fs-24">
-                              <i className="ri-folder-zip-line"></i>
+                    {mediaList && mediaList.length > 0 ? (
+                      mediaList.map((media, index) => (
+                        <tr key={index}>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <div className="avatar-sm">
+                                <div className="avatar-title bg-light text-primary rounded fs-24">
+                                  <i className="ri-folder-zip-line"></i>
+                                </div>
+                              </div>
+                              <div className="ms-3 flex-grow-1">
+                                <h5 className="fs-14 mb-0">
+                                  <Link to="#" className="text-dark">
+                                    {media.fileName}
+                                  </Link>
+                                </h5>
+                              </div>
                             </div>
-                          </div>
-                          <div className="ms-3 flex-grow-1">
-                            <h5 className="fs-14 mb-0">
-                              <Link to="#" className="text-dark">
-                                Artboard-documents.zip
-                              </Link>
-                            </h5>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Zip File</td>
-                      <td>4.57 MB</td>
-                      <td>12 Dec 2021</td>
-                      <td>
-                        <UncontrolledDropdown>
-                          <DropdownToggle
-                            tag="a"
-                            href="#"
-                            className="btn btn-soft-primary btn-sm btn-icon"
-                          >
-                            <i className="ri-more-fill"></i>
-                          </DropdownToggle>
-                          <DropdownMenu className="dropdown-menu-end">
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-eye-fill me-2 align-bottom text-muted"></i>
-                                Görüntüle
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-download-2-fill me-2 align-bottom text-muted"></i>
-                                İndir
-                              </DropdownItem>
-                            </li>
-                            <li className="dropdown-divider"></li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-delete-bin-5-fill me-2 align-bottom text-muted"></i>
-                                Sil
-                              </DropdownItem>
-                            </li>
-                          </DropdownMenu>
-                        </UncontrolledDropdown>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div className="avatar-sm">
-                            <div className="avatar-title bg-light text-primary rounded fs-24">
-                              <i className="ri-file-pdf-fill"></i>
-                            </div>
-                          </div>
-                          <div className="ms-3 flex-grow-1">
-                            <h5 className="fs-14 mb-0">
-                              <Link to="#" className="text-dark">
-                                Bank Management System
-                              </Link>
-                            </h5>
-                          </div>
-                        </div>
-                      </td>
-                      <td>PDF File</td>
-                      <td>8.89 MB</td>
-                      <td>24 Nov 2021</td>
-                      <td>
-                        <UncontrolledDropdown>
-                          <DropdownToggle
-                            tag="a"
-                            href="#"
-                            className="btn btn-soft-primary btn-sm btn-icon"
-                          >
-                            <i className="ri-more-fill"></i>
-                          </DropdownToggle>
-                          <DropdownMenu className="dropdown-menu-end">
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-eye-fill me-2 align-bottom text-muted"></i>
-                                View
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-download-2-fill me-2 align-bottom text-muted"></i>
-                                Download
-                              </DropdownItem>
-                            </li>
-                            <li className="dropdown-divider"></li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-delete-bin-5-fill me-2 align-bottom text-muted"></i>
-                                Delete
-                              </DropdownItem>
-                            </li>
-                          </DropdownMenu>
-                        </UncontrolledDropdown>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div className="avatar-sm">
-                            <div className="avatar-title bg-light text-primary rounded fs-24">
-                              <i className="ri-video-line"></i>
-                            </div>
-                          </div>
-                          <div className="ms-3 flex-grow-1">
-                            <h5 className="fs-14 mb-0">
-                              <Link to="#" className="text-dark">
-                                Tour-video.mp4
-                              </Link>
-                            </h5>
-                          </div>
-                        </div>
-                      </td>
-                      <td>MP4 File</td>
-                      <td>14.62 MB</td>
-                      <td>19 Nov 2021</td>
-                      <td>
-                        <UncontrolledDropdown>
-                          <DropdownToggle
-                            tag="a"
-                            href="#"
-                            className="btn btn-soft-primary btn-sm btn-icon"
-                          >
-                            <i className="ri-more-fill"></i>
-                          </DropdownToggle>
-                          <DropdownMenu className="dropdown-menu-end">
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-eye-fill me-2 align-bottom text-muted"></i>
-                                View
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-download-2-fill me-2 align-bottom text-muted"></i>
-                                Download
-                              </DropdownItem>
-                            </li>
-                            <li className="dropdown-divider"></li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-delete-bin-5-fill me-2 align-bottom text-muted"></i>
-                                Delete
-                              </DropdownItem>
-                            </li>
-                          </DropdownMenu>
-                        </UncontrolledDropdown>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div className="avatar-sm">
-                            <div className="avatar-title bg-light text-primary rounded fs-24">
-                              <i className="ri-file-excel-fill"></i>
-                            </div>
-                          </div>
-                          <div className="ms-3 flex-grow-1">
-                            <h5 className="fs-14 mb-0">
-                              <Link to="#" className="text-dark">
-                                Account-statement.xsl
-                              </Link>
-                            </h5>
-                          </div>
-                        </div>
-                      </td>
-                      <td>XSL File</td>
-                      <td>2.38 KB</td>
-                      <td>14 Nov 2021</td>
-                      <td>
-                        <UncontrolledDropdown>
-                          <DropdownToggle
-                            tag="a"
-                            href="#"
-                            className="btn btn-soft-primary btn-sm btn-icon"
-                          >
-                            <i className="ri-more-fill"></i>
-                          </DropdownToggle>
-                          <DropdownMenu className="dropdown-menu-end">
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-eye-fill me-2 align-bottom text-muted"></i>
-                                View
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-download-2-fill me-2 align-bottom text-muted"></i>
-                                Download
-                              </DropdownItem>
-                            </li>
-                            <li className="dropdown-divider"></li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-delete-bin-5-fill me-2 align-bottom text-muted"></i>
-                                Delete
-                              </DropdownItem>
-                            </li>
-                          </DropdownMenu>
-                        </UncontrolledDropdown>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div className="avatar-sm">
-                            <div className="avatar-title bg-light text-primary rounded fs-24">
-                              <i className="ri-folder-fill"></i>
-                            </div>
-                          </div>
-                          <div className="ms-3 flex-grow-1">
-                            <h5 className="fs-14 mb-0">
-                              <Link to="#" className="text-dark">
-                                Project Screenshots Collection
-                              </Link>
-                            </h5>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Folder File</td>
-                      <td>87.24 MB</td>
-                      <td>08 Nov 2021</td>
-                      <td>
-                        <UncontrolledDropdown>
-                          <DropdownToggle
-                            tag="a"
-                            href="#"
-                            className="btn btn-soft-primary btn-sm btn-icon"
-                          >
-                            <i className="ri-more-fill"></i>
-                          </DropdownToggle>
-                          <DropdownMenu className="dropdown-menu-end">
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-eye-fill me-2 align-bottom text-muted"></i>
-                                View
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-download-2-fill me-2 align-bottom text-muted"></i>
-                                Download
-                              </DropdownItem>
-                            </li>
-                            <li className="dropdown-divider"></li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-delete-bin-5-fill me-2 align-bottom text-muted"></i>
-                                Delete
-                              </DropdownItem>
-                            </li>
-                          </DropdownMenu>
-                        </UncontrolledDropdown>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          <div className="avatar-sm">
-                            <div className="avatar-title bg-light text-primary rounded fs-24">
-                              <i className="ri-image-2-fill"></i>
-                            </div>
-                          </div>
-                          <div className="ms-3 flex-grow-1">
-                            <h5 className="fs-14 mb-0">
-                              <Link to="#" className="text-dark">
-                                Velzon-logo.png
-                              </Link>
-                            </h5>
-                          </div>
-                        </div>
-                      </td>
-                      <td>PNG File</td>
-                      <td>879 KB</td>
-                      <td>02 Nov 2021</td>
-                      <td>
-                        <UncontrolledDropdown>
-                          <DropdownToggle
-                            tag="a"
-                            href="#"
-                            className="btn btn-soft-primary btn-sm btn-icon"
-                          >
-                            <i className="ri-more-fill"></i>
-                          </DropdownToggle>
-                          <DropdownMenu className="dropdown-menu-end">
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-eye-fill me-2 align-bottom text-muted"></i>
-                                View
-                              </DropdownItem>
-                            </li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-download-2-fill me-2 align-bottom text-muted"></i>
-                                Download
-                              </DropdownItem>
-                            </li>
-                            <li className="dropdown-divider"></li>
-                            <li>
-                              <DropdownItem>
-                                <i className="ri-delete-bin-5-fill me-2 align-bottom text-muted"></i>
-                                Delete
-                              </DropdownItem>
-                            </li>
-                          </DropdownMenu>
-                        </UncontrolledDropdown>
-                      </td>
-                    </tr>
+                          </td>
+                          <td>Zip File</td>
+                          <td>4.57 MB</td>
+                          <td>{mediaList[index].uploadedOn}</td>
+                          <td>
+                            <UncontrolledDropdown>
+                              <DropdownToggle
+                                tag="a"
+                                href="#"
+                                className="btn btn-soft-primary btn-sm btn-icon"
+                              >
+                                <i className="ri-more-fill"></i>
+                              </DropdownToggle>
+                              <DropdownMenu className="dropdown-menu-end">
+                                <li>
+                                  <DropdownItem>
+                                    <i className="ri-eye-fill me-2 align-bottom text-muted"></i>
+                                    Görüntüle
+                                  </DropdownItem>
+                                </li>
+                                <li>
+                                  <DropdownItem>
+                                    <i className="ri-download-2-fill me-2 align-bottom text-muted"></i>
+                                    İndir
+                                  </DropdownItem>
+                                </li>
+                                <li className="dropdown-divider"></li>
+                                <li>
+                                  <DropdownItem>
+                                    <i className="ri-delete-bin-5-fill me-2 align-bottom text-muted"></i>
+                                    Sil
+                                  </DropdownItem>
+                                </li>
+                              </DropdownMenu>
+                            </UncontrolledDropdown>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" className="text-center">
+                          No media files found.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </Table>
               </div>

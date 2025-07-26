@@ -252,6 +252,24 @@ const UpdateEvent = () => {
                           />
                         </div>
                       </Col>
+                      <Col lg={4} style={{ maxWidth: "240px" }}>
+                        <Label htmlFor="domain-name" className="form-label">
+                          Domain Adı
+                        </Label>
+                        <Input
+                          type="text"
+                          className="form-control"
+                          id="domain-name"
+                          placeholder="Domain Adı Girin"
+                          value={eventData.domainName || ""}
+                          onChange={(e) =>
+                            setEventData({
+                              ...eventData,
+                              domainName: e.target.value,
+                            })
+                          }
+                        />
+                      </Col>
                     </Row>
                   </CardBody>
                 </Card>
@@ -259,8 +277,9 @@ const UpdateEvent = () => {
                   <button
                     type="button"
                     className="btn btn-soft-secondary w-sm me-1"
+                    onClick={() => navigate("/apps-events-all")}
                   >
-                    Sil
+                    Geri Dön
                   </button>
 
                   <button type="submit" className="btn btn-success w-sm">

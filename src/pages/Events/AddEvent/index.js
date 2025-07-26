@@ -39,7 +39,11 @@ const AddEvent = () => {
     startTime: "",
     endTime: "",
     thumbnailUrl: "",
+    domainName: "",
+    personList: [""],
+    mediaList: [],
   });
+
   const navigate = useNavigate();
 
   // CKEditor için ayrı state
@@ -67,7 +71,12 @@ const AddEvent = () => {
       startTime: startDate ? startDate[0] : "",
       endTime: endDate ? endDate[0] : "",
       thumbnailUrl: thumbnailUrl,
+      theme: selectedTheme,
+      personList: ["yusuf", "yasin", "musa"],
+      mediaList: null,
+      domainName: eventData.domainName || "",
     };
+    console.log("Payload:", payload);
     try {
       await createEvent(payload);
       navigate("/apps-events-all"); // Yönlendirmek istediğiniz sayfanın path'i
@@ -253,6 +262,24 @@ const AddEvent = () => {
                           />
                         </div>
                       </Col>
+                      <Col lg={4} style={{ maxWidth: "240px" }}>
+                        <Label htmlFor="domain-name" className="form-label">
+                          Domain Adı
+                        </Label>
+                        <Input
+                          type="text"
+                          className="form-control"
+                          id="domain-name"
+                          placeholder="Domain Adı Girin"
+                          value={eventData.domainName || ""}
+                          onChange={(e) =>
+                            setEventData({
+                              ...eventData,
+                              domainName: e.target.value,
+                            })
+                          }
+                        />
+                      </Col>
                     </Row>
                   </CardBody>
                 </Card>
@@ -260,8 +287,9 @@ const AddEvent = () => {
                   <button
                     type="button"
                     className="btn btn-soft-secondary w-sm me-1"
+                    onClick={() => navigate("/apps-events-all")}
                   >
-                    Sil
+                    Geri Dön
                   </button>
 
                   <button type="submit" className="btn btn-success w-sm">
