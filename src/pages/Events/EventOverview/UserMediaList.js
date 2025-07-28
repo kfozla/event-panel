@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardBody,
@@ -13,18 +13,55 @@ import {
 } from "reactstrap";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { createSelector } from "reselect";
-import {
-  getUserByIdList,
-  getUserMediaListById,
-} from "../../../slices/users/thunk";
+import { deleteMedia } from "../../../api/media";
+import DeleteModal from "../../../Components/Common/DeleteModal";
+import { ToastContainer } from "react-toastify";
 
 const UserMediaList = () => {
   const { id: userId } = useParams();
   const [username, setUsername] = React.useState("");
   const [mediaList, setMediaList] = React.useState([]);
   const URL = "http://localhost:5176/";
+
+  const [media, setMedia] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(false);
+
+  const onClickData = (media) => {
+    setMedia(media);
+    setDeleteModal(true);
+  };
+  // Silme işlemi
+
+  const handleDeleteEventList = async () => {
+    if (media) {
+      await deleteMedia(media.id);
+      setDeleteModal(false);
+      // Silme sonrası media listesini güncelle
+      try {
+        const mediaRes = await import("../../../api/user").then((mod) =>
+          mod.getUserMediaList(userId)
+        );
+        setMediaList(mediaRes.data || []);
+      } catch (err) {
+        setMediaList([]);
+      }
+    }
+  };
+
+  const handleDownload = async (url, filename) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("İndirme hatası:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,6 +86,12 @@ const UserMediaList = () => {
 
   return (
     <React.Fragment>
+      <ToastContainer />
+      <DeleteModal
+        show={deleteModal}
+        onDeleteClick={() => handleDeleteEventList()}
+        onCloseClick={() => setDeleteModal(false)}
+      />
       <div className="page-content">
         <Container fluid>
           <Card>
@@ -113,20 +156,36 @@ const UserMediaList = () => {
                                   </DropdownToggle>
                                   <DropdownMenu className="dropdown-menu-end">
                                     <li>
-                                      <DropdownItem>
+                                      <DropdownItem
+                                        onClick={() =>
+                                          window.open(
+                                            URL + media.filePath,
+                                            "_blank"
+                                          )
+                                        }
+                                      >
                                         <i className="ri-eye-fill me-2 align-bottom text-muted"></i>
                                         Görüntüle
                                       </DropdownItem>
                                     </li>
                                     <li>
-                                      <DropdownItem>
+                                      <DropdownItem
+                                        onClick={() =>
+                                          handleDownload(
+                                            URL + media.filePath,
+                                            media.fileName
+                                          )
+                                        }
+                                      >
                                         <i className="ri-download-2-fill me-2 align-bottom text-muted"></i>
                                         İndir
                                       </DropdownItem>
                                     </li>
                                     <li className="dropdown-divider"></li>
                                     <li>
-                                      <DropdownItem>
+                                      <DropdownItem
+                                        onClick={() => onClickData(media)}
+                                      >
                                         <i className="ri-delete-bin-5-fill me-2 align-bottom text-muted"></i>
                                         Sil
                                       </DropdownItem>
