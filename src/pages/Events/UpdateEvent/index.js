@@ -25,6 +25,7 @@ import Dropzone from "react-dropzone";
 import { useNavigate, useParams } from "react-router-dom";
 import { getEventById, updateEvent } from "../../../api/events";
 import { ToastContainer, toast } from "react-toastify";
+import { set } from "lodash";
 
 const UpdateEvent = () => {
   const { id } = useParams();
@@ -33,18 +34,21 @@ const UpdateEvent = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const [domainName, setDomainName] = useState("");
+  const [selectedTheme, setSelectedTheme] = useState("light"); // Varsayılan tema "light"
   const navigate = useNavigate();
 
-  const [selectedTheme, setSelectedTheme] = useState("");
   useEffect(() => {
     async function fetchEvent() {
       try {
         const data = await getEventById(id);
         setEventData(data);
         setEditorData(data.description || "");
-        setStartDate(data.startTime ? [data.startTime] : null);
-        setEndDate(data.endTime ? [data.endTime] : null);
+        setStartDate(data.startTime ? new Date(data.startTime) : null);
+        setEndDate(data.endTime ? new Date(data.endTime) : null);
         setThumbnailUrl(data.thumbnailUrl || "");
+        setSelectedTheme(data.theme || "light"); // Varsayılan tema "light"
+        setDomainName(data.domainName || "");
       } catch (err) {
         console.error("Etkinlik verisi alınamadı:", err);
       }
@@ -52,6 +56,18 @@ const UpdateEvent = () => {
     if (id) fetchEvent();
   }, [id]);
 
+  const formatLocalDateTime = (date) => {
+    if (!date) return "";
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  };
   // Form submit fonksiyonu
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,9 +79,12 @@ const UpdateEvent = () => {
     const payload = {
       ...eventData,
       description: editorData,
-      startTime: startDate ? startDate[0] : "",
-      endTime: endDate ? endDate[0] : "",
+      // toISOString() yerine formatLocalDateTime kullanın
+      startTime: formatLocalDateTime(startDate),
+      endTime: formatLocalDateTime(endDate),
       thumbnailUrl: thumbnailUrl,
+      domainName: domainName || "",
+      theme: selectedTheme || "light", // Varsayılan tema "light"
     };
     try {
       await updateEvent(id, payload);
@@ -187,7 +206,7 @@ const UpdateEvent = () => {
                             }}
                             placeholder="Etkinlik Tarihi Seçin"
                             value={startDate}
-                            onChange={(date) => setStartDate(date)}
+                            onChange={(dates) => setStartDate(dates[0])}
                           />
                         </div>
                       </Col>
@@ -209,7 +228,7 @@ const UpdateEvent = () => {
                             }}
                             placeholder="Etkinlik Tarihi Seçin"
                             value={endDate}
-                            onChange={(date) => setEndDate(date)}
+                            onChange={(dates) => setEndDate(dates[0])}
                           />
                         </div>
                       </Col>
@@ -261,13 +280,8 @@ const UpdateEvent = () => {
                           className="form-control"
                           id="domain-name"
                           placeholder="Domain Adı Girin"
-                          value={eventData.domainName || ""}
-                          onChange={(e) =>
-                            setEventData({
-                              ...eventData,
-                              domainName: e.target.value,
-                            })
-                          }
+                          value={domainName || ""}
+                          onChange={(e) => setDomainName(e.target.value)}
                         />
                       </Col>
                     </Row>
@@ -287,77 +301,6 @@ const UpdateEvent = () => {
                   </button>
                 </div>
               </form>
-              {/* Add more sections as needed 
-              <Card>
-                <CardHeader>
-                  <h5 className="card-title mb-0">Dosya Ekle</h5>
-                </CardHeader>
-                <CardBody>
-                  <div>
-                    <p className="text-muted">Dosyaları buraya ekleyin.</p>
-
-                    <Dropzone
-                      onDrop={(acceptedFiles) => {
-                        handleAcceptedFiles(acceptedFiles);
-                      }}
-                    >
-                      {({ getRootProps, getInputProps }) => (
-                        <div className="dropzone dz-clickable">
-                          <div
-                            className="dz-message needsclick"
-                            {...getRootProps()}
-                          >
-                            <div className="mb-3">
-                              <i className="display-4 text-muted ri-upload-cloud-2-fill" />
-                            </div>
-                            <h4>
-                              Dosyaları buraya ekleyin veya yüklemek için
-                              tıklayın.
-                            </h4>
-                          </div>
-                        </div>
-                      )}
-                    </Dropzone>
-
-                    <ul className="list-unstyled mb-0" id="dropzone-preview">
-                      {selectedFiles.map((f, i) => {
-                        return (
-                          <Card
-                            className="mt-1 mb-0 shadow-none border dz-processing dz-image-preview dz-success dz-complete"
-                            key={i + "-file"}
-                          >
-                            <div className="p-2">
-                              <Row className="align-items-center">
-                                <Col className="col-auto">
-                                  <img
-                                    data-dz-thumbnail=""
-                                    height="80"
-                                    className="avatar-sm rounded bg-light"
-                                    alt={f.name}
-                                    src={f.preview}
-                                  />
-                                </Col>
-                                <Col>
-                                  <Link
-                                    to="#"
-                                    className="text-muted font-weight-bold"
-                                  >
-                                    {f.name}
-                                  </Link>
-                                  <p className="mb-0">
-                                    <strong>{f.formattedSize}</strong>
-                                  </p>
-                                </Col>
-                              </Row>
-                            </div>
-                          </Card>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                </CardBody>
-              </Card>
-*/}
             </Col>
           </Row>
         </Container>

@@ -45,3 +45,21 @@ export const deleteEvent = async (id) => {
     throw error;
   }
 };
+export const getEventMediaList = async (eventId) => {
+  try {
+    const response = await apiClient.get(`/events/${eventId}/medias`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching media for event with id ${eventId}:`, error);
+    throw error;
+  }
+};
+export const getEventUserList = async (eventId) => {
+  try {
+    const response = await apiClient.get(`/events/${eventId}/users`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching users for event with id ${eventId}:`, error);
+    throw error;
+  }
+};

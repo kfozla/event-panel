@@ -5,6 +5,7 @@ import {
   addEventList,
   updateEventList,
   deleteEventList,
+  getEventUserList,
 } from "./thunk";
 export const initialState = {
   eventLists: [],
@@ -56,6 +57,16 @@ const EventsSlice = createSlice({
       );
     });
     builder.addCase(deleteEventList.rejected, (state, action) => {
+      state.error = action.payload || null;
+    });
+    builder.addCase(getEventUserList.fulfilled, (state, action) => {
+      const { eventId, users } = action.payload;
+      const event = state.eventLists.find((e) => e.id === eventId);
+      if (event) {
+        event.users = users;
+      }
+    });
+    builder.addCase(getEventUserList.rejected, (state, action) => {
       state.error = action.payload || null;
     });
   },

@@ -17,7 +17,12 @@ import { Link } from "react-router-dom";
 import slack from "../../../assets/images/brands/slack.png";
 import OverviewTab from "./OverviewTab";
 import DocumentsTab from "./DocumentsTab";
-import { getEventById, deleteEvent } from "../../../api/events";
+import {
+  getEventById,
+  deleteEvent,
+  getEventMediaList,
+  getEventUserList,
+} from "../../../api/events";
 import { useEffect } from "react";
 import TeamTab from "./TeamTab";
 import DeleteModal from "../../../Components/Common/DeleteModal";
@@ -61,17 +66,19 @@ const Section = ({ eventId }) => {
   };
 
   useEffect(() => {
-    try {
-      const fetchEvent = async () => {
+    const fetchEvent = async () => {
+      try {
         const eventData = await getEventById(eventId);
+        eventData.mediaList = await getEventMediaList(eventId);
+        eventData.userList = await getEventUserList(eventId);
         setEventData(eventData);
-        console.log("Event Data:", eventData);
-      };
-      fetchEvent();
-    } catch (error) {
-      console.error("Error fetching event data:", error);
-    }
+      } catch (error) {
+        console.error("Error fetching event data:", error);
+      }
+    };
+    fetchEvent();
   }, []);
+
   return (
     <React.Fragment>
       <ToastContainer closeButton={false} />
@@ -259,6 +266,7 @@ const Section = ({ eventId }) => {
         <Col lg={12}>
           <TabContent activeTab={activeTab} className="text-muted">
             <TabPane tabId="1">
+              {console.log("test2")}
               <OverviewTab
                 eventDescription={eventData ? eventData.description : ""}
                 eventCreatedOn={eventData ? eventData.createdOn : ""}
@@ -266,15 +274,21 @@ const Section = ({ eventId }) => {
                 eventEndTime={eventData ? eventData.endTime : ""}
                 eventDomainName={eventData ? eventData.domainName : ""}
                 eventTheme={eventData ? eventData.theme : ""}
-                eventPersonList={eventData ? eventData.personList : []}
+                eventUserList={eventData ? eventData.userList : []}
               />
             </TabPane>
             <TabPane tabId="2">
+              {console.log("test3")}
               <DocumentsTab mediaList={eventData ? eventData.mediaList : []} />
             </TabPane>
             <TabPane tabId="3">
-              <TeamTab personList={eventData ? eventData.personList : []} />
+              {console.log("test4")}
+              <TeamTab
+                userList={eventData ? eventData.userList : []}
+                eventID={eventData ? eventData.id : null}
+              />
             </TabPane>
+            {console.log("test5")}
           </TabContent>
         </Col>
       </Row>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import {
   Card,
@@ -27,12 +27,79 @@ import avatar8 from "../../../assets/images/users/avatar-8.jpg";
 import avatar7 from "../../../assets/images/users/avatar-7.jpg";
 import avatar5 from "../../../assets/images/users/avatar-5.jpg";
 
-const TeamTab = ({ personList }) => {
-  //Modal
-  const [modal, setModal] = useState(false);
-  const openModal = () => setModal(!modal);
+import { useEffect } from "react";
+import DeleteModal from "../../../Components/Common/DeleteModal";
+import { ToastContainer } from "react-toastify";
+import { getUserMediaCount, deleteUser } from "../../../api/user";
+import { getEventUserList } from "../../../api/events";
+
+const TeamTab = ({ eventID }) => {
+  const [userList, setUserList] = React.useState([]);
+  const [user, setUser] = React.useState(null);
+  const [deleteModal, setDeleteModal] = React.useState(false);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await getEventUserList(eventID);
+        const usersWithMedia = await Promise.all(
+          (res || []).map(async (u) => {
+            if (u.mediaCount === undefined) {
+              try {
+                const mediaRes = await getUserMediaCount(u.id);
+                return { ...u, mediaCount: mediaRes.data };
+              } catch {
+                return { ...u, mediaCount: null };
+              }
+            }
+            return u;
+          })
+        );
+        setUserList(usersWithMedia);
+      } catch {
+        setUserList([]);
+      }
+    };
+    fetchUsers();
+  }, [eventID]);
+
+  // Kullanıcı silme işlemi
+  const onClickData = (user) => {
+    setUser(user);
+    setDeleteModal(true);
+  };
+
+  const handleDeleteEventList = async () => {
+    if (user) {
+      await deleteUser(user.id);
+      setDeleteModal(false);
+      // Kullanıcı listesini güncelle
+      const res = await getEventUserList(eventID);
+      const usersWithMedia = await Promise.all(
+        (res || []).map(async (u) => {
+          if (u.mediaCount === undefined) {
+            try {
+              const mediaRes = await getUserMediaCount(u.id);
+              return { ...u, mediaCount: mediaRes.data };
+            } catch {
+              return { ...u, mediaCount: null };
+            }
+          }
+          return u;
+        })
+      );
+      setUserList(usersWithMedia);
+    }
+  };
+  console.log("User List:", userList);
   return (
     <React.Fragment>
+      <ToastContainer />
+      <DeleteModal
+        show={deleteModal}
+        onDeleteClick={() => handleDeleteEventList()}
+        onCloseClick={() => setDeleteModal(false)}
+      />
       <Row className="g-4 mb-3">
         <div className="col-sm">
           <div className="d-flex">
@@ -49,7 +116,7 @@ const TeamTab = ({ personList }) => {
       </Row>
 
       <div className="team-list list-view-filter">
-        {personList.map((person, index) => (
+        {userList.map((user, index) => (
           <Card className="team-box" key={index}>
             <CardBody className="px-4">
               <Row className="align-items-center team-row">
@@ -58,7 +125,7 @@ const TeamTab = ({ personList }) => {
                   <div className="team-profile-img">
                     <div className="team-content">
                       <Link to="#" className="d-block">
-                        <h5 className="fs-16 mb-1">{person}</h5>
+                        <h5 className="fs-16 mb-1">{user.username}</h5>
                       </Link>
                     </div>
                   </div>
@@ -66,7 +133,11 @@ const TeamTab = ({ personList }) => {
                 <Col lg={4}>
                   <Row className="text-muted text-center">
                     <Col xs={6}>
-                      <h5 className="mb-1">197</h5>
+                      <h5 className="mb-1">
+                        {user.mediaCount !== undefined
+                          ? user.mediaCount.data ?? user.mediaCount
+                          : "Yükleniyor..."}
+                      </h5>
                       <p className="text-muted mb-0">Yükleme</p>
                     </Col>
                   </Row>
@@ -74,7 +145,7 @@ const TeamTab = ({ personList }) => {
                 <Col lg={2} className="col">
                   <div className="text-end">
                     <Link
-                      to="/pages-profile"
+                      to={`/apps-events-user-medialist/${user.id}`}
                       className="btn btn-light view-btn"
                     >
                       Yükledikleri
@@ -84,8 +155,8 @@ const TeamTab = ({ personList }) => {
                 <Col lg={2} className="col">
                   <div className="text-end">
                     <Link
-                      to="/pages-profile"
                       className="btn btn-danger view-btn"
+                      onClick={() => onClickData(user)}
                     >
                       Yüklemeleri Sil
                     </Link>
@@ -101,7 +172,7 @@ const TeamTab = ({ personList }) => {
         <div className="col-sm-6">
           <div>
             <p className="mb-sm-0">
-              Showing 1 to 10 of {personList.length} entries
+              Showing 1 to 10 of {userList.length} entries
             </p>
           </div>
         </div>
@@ -152,226 +223,6 @@ const TeamTab = ({ personList }) => {
           </ul>
         </div>
       </div>
-
-      <Modal isOpen={modal} toggle={openModal} centered className="border-0">
-        <ModalHeader toggle={openModal} className="p-3 ps-4 bg-primary-subtle">
-          Members
-        </ModalHeader>
-        <ModalBody className="p-4">
-          <div className="search-box mb-3">
-            <Input
-              type="text"
-              className="form-control bg-light border-light"
-              placeholder="Search here..."
-            />
-            <i className="ri-search-line search-icon"></i>
-          </div>
-
-          <div className="mb-4 d-flex align-items-center">
-            <div className="me-2">
-              <h5 className="mb-0 fs-13">Members :</h5>
-            </div>
-            <div className="avatar-group justify-content-center">
-              <Link
-                to="#"
-                className="avatar-group-item"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-placement="top"
-                title=""
-                data-bs-original-title="Brent Gonzalez"
-              >
-                <div className="avatar-xs">
-                  <img
-                    src={avatar3}
-                    alt=""
-                    className="rounded-circle img-fluid"
-                  />
-                </div>
-              </Link>
-              <Link
-                to="#"
-                className="avatar-group-item"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-placement="top"
-                title=""
-                data-bs-original-title="Sylvia Wright"
-              >
-                <div className="avatar-xs">
-                  <div className="avatar-title rounded-circle bg-success">
-                    S
-                  </div>
-                </div>
-              </Link>
-              <Link
-                to="#"
-                className="avatar-group-item"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-placement="top"
-                title=""
-                data-bs-original-title="Ellen Smith"
-              >
-                <div className="avatar-xs">
-                  <img
-                    src={avatar4}
-                    alt=""
-                    className="rounded-circle img-fluid"
-                  />
-                </div>
-              </Link>
-            </div>
-          </div>
-          <SimpleBar
-            className="mx-n4 px-4"
-            data-simplebar="init"
-            style={{ maxHeight: "225px" }}
-          >
-            <div className="vstack gap-3">
-              <div className="d-flex align-items-center">
-                <div className="avatar-xs flex-shrink-0 me-3">
-                  <img
-                    src={avatar2}
-                    alt=""
-                    className="img-fluid rounded-circle"
-                  />
-                </div>
-                <div className="flex-grow-1">
-                  <h5 className="fs-13 mb-0">
-                    <Link to="#" className="text-dark d-block">
-                      Nancy Martino
-                    </Link>
-                  </h5>
-                </div>
-                <div className="flex-shrink-0">
-                  <button type="button" className="btn btn-light btn-sm">
-                    Add
-                  </button>
-                </div>
-              </div>
-
-              <div className="d-flex align-items-center">
-                <div className="avatar-xs flex-shrink-0 me-3">
-                  <div className="avatar-title bg-danger-subtle text-danger rounded-circle">
-                    HB
-                  </div>
-                </div>
-                <div className="flex-grow-1">
-                  <h5 className="fs-13 mb-0">
-                    <Link to="#" className="text-dark d-block">
-                      Henry Baird
-                    </Link>
-                  </h5>
-                </div>
-                <div className="flex-shrink-0">
-                  <button type="button" className="btn btn-light btn-sm">
-                    Add
-                  </button>
-                </div>
-              </div>
-
-              <div className="d-flex align-items-center">
-                <div className="avatar-xs flex-shrink-0 me-3">
-                  <img
-                    src={avatar3}
-                    alt=""
-                    className="img-fluid rounded-circle"
-                  />
-                </div>
-                <div className="flex-grow-1">
-                  <h5 className="fs-13 mb-0">
-                    <Link to="#" className="text-dark d-block">
-                      Frank Hook
-                    </Link>
-                  </h5>
-                </div>
-                <div className="flex-shrink-0">
-                  <button type="button" className="btn btn-light btn-sm">
-                    Add
-                  </button>
-                </div>
-              </div>
-
-              <div className="d-flex align-items-center">
-                <div className="avatar-xs flex-shrink-0 me-3">
-                  <img
-                    src={avatar4}
-                    alt=""
-                    className="img-fluid rounded-circle"
-                  />
-                </div>
-                <div className="flex-grow-1">
-                  <h5 className="fs-13 mb-0">
-                    <Link to="#" className="text-dark d-block">
-                      Jennifer Carter
-                    </Link>
-                  </h5>
-                </div>
-                <div className="flex-shrink-0">
-                  <button type="button" className="btn btn-light btn-sm">
-                    Add
-                  </button>
-                </div>
-              </div>
-
-              <div className="d-flex align-items-center">
-                <div className="avatar-xs flex-shrink-0 me-3">
-                  <div className="avatar-title bg-success-subtle text-success rounded-circle">
-                    AC
-                  </div>
-                </div>
-                <div className="flex-grow-1">
-                  <h5 className="fs-13 mb-0">
-                    <Link to="#" className="text-dark d-block">
-                      Alexis Clarke
-                    </Link>
-                  </h5>
-                </div>
-                <div className="flex-shrink-0">
-                  <button type="button" className="btn btn-light btn-sm">
-                    Add
-                  </button>
-                </div>
-              </div>
-
-              <div className="d-flex align-items-center">
-                <div className="avatar-xs flex-shrink-0 me-3">
-                  <img
-                    src={avatar7}
-                    alt=""
-                    className="img-fluid rounded-circle"
-                  />
-                </div>
-                <div className="flex-grow-1">
-                  <h5 className="fs-13 mb-0">
-                    <Link to="#" className="text-dark d-block">
-                      Joseph Parker
-                    </Link>
-                  </h5>
-                </div>
-                <div className="flex-shrink-0">
-                  <button type="button" className="btn btn-light btn-sm">
-                    Add
-                  </button>
-                </div>
-              </div>
-            </div>
-          </SimpleBar>
-        </ModalBody>
-        <div className="modal-footer">
-          <button
-            type="button"
-            className="btn btn-light w-xs"
-            data-bs-dismiss="modal"
-          >
-            Cancel
-          </button>
-          <button type="button" className="btn btn-primary w-xs">
-            Invite
-          </button>
-        </div>
-      </Modal>
     </React.Fragment>
   );
 };

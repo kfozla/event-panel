@@ -9,6 +9,7 @@ import {
   createEvent,
   updateEvent,
   deleteEvent,
+  getEventUserList as getEventUserListApi,
 } from "../../api/events";
 
 export const getEventList = createAsyncThunk(
@@ -72,6 +73,17 @@ export const deleteEventList = createAsyncThunk(
       return id;
     } catch (error) {
       toast.error("event Delete Failed", { autoClose: 3000 });
+      return error;
+    }
+  }
+);
+export const getEventUserList = createAsyncThunk(
+  "events/getEventUserList",
+  async (eventId) => {
+    try {
+      const response = await getEventUserListApi(eventId);
+      return response;
+    } catch (error) {
       return error;
     }
   }

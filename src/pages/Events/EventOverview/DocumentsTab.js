@@ -11,9 +11,31 @@ import {
   Table,
   UncontrolledDropdown,
 } from "reactstrap";
+import { getAllUsers, getUserMediaCount } from "../../../api/user";
+import { useEffect, useState } from "react";
 
 const DocumentsTab = ({ mediaList }) => {
-  console.log("Media List:", mediaList);
+  const [usernames, setUsernames] = useState([]);
+  useEffect(() => {
+    async function fetchUsernames() {
+      const users = await getAllUsers();
+      const userMediaCounts = await Promise.all(
+        users.data.map((user) => getUserMediaCount(user.id))
+      );
+      const userMap = {};
+      users.data.forEach((user, index) => {
+        userMap[user.id] = {
+          username: user.username,
+          mediaCount: userMediaCounts[index].data.count,
+        };
+      });
+      setUsernames(userMap);
+    }
+    if (mediaList && mediaList.length > 0) {
+      fetchUsernames();
+    }
+  }, [mediaList]);
+  console.log("medialist", mediaList);
   return (
     <React.Fragment>
       <Card>
@@ -31,6 +53,7 @@ const DocumentsTab = ({ mediaList }) => {
                       <th scope="col">Dosya Türü</th>
                       <th scope="col">Boyutu</th>
                       <th scope="col">Yükleme Tarihi</th>
+                      <th scope="col">Yükleyen</th>
                       <th scope="col" style={{ width: "120px" }}>
                         İşlemler
                       </th>
@@ -44,7 +67,13 @@ const DocumentsTab = ({ mediaList }) => {
                             <div className="d-flex align-items-center">
                               <div className="avatar-sm">
                                 <div className="avatar-title bg-light text-primary rounded fs-24">
-                                  <i className="ri-folder-zip-line"></i>
+                                  {/* TODO */}
+                                  <img
+                                    src="http://localhost:5176/uploads/english.png"
+                                    alt={media.fileName}
+                                    height={40}
+                                    width={40}
+                                  />
                                 </div>
                               </div>
                               <div className="ms-3 flex-grow-1">
@@ -59,6 +88,9 @@ const DocumentsTab = ({ mediaList }) => {
                           <td>Zip File</td>
                           <td>4.57 MB</td>
                           <td>{mediaList[index].uploadedOn}</td>
+                          <td>
+                            {usernames[media.userId]?.username || "Loading..."}
+                          </td>{" "}
                           <td>
                             <UncontrolledDropdown>
                               <DropdownToggle

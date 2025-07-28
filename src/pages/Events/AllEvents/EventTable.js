@@ -15,7 +15,6 @@ function EventTable() {
     (Events) => Events.eventLists
   );
   const eventLists = useSelector(selectEventData);
-  console.log("eventLists", eventLists);
 
   const [event, setEvent] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
@@ -161,9 +160,7 @@ function EventTable() {
       accessorKey: "id",
       cell: (cell) => {
         const event = cell.row.original;
-        console.log("cell", cell);
-        console.log("cell.row", cell.row);
-        console.log("cell.row.original", cell.row.original);
+
         return (
           <div className="d-flex flex-column gap-2">
             <button

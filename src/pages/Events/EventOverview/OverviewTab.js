@@ -29,7 +29,7 @@ const OverviewTab = ({
   eventEndTime,
   eventDomainName,
   eventTheme,
-  eventPersonList,
+  eventUserList,
 }) => {
   return (
     <React.Fragment>
@@ -111,26 +111,26 @@ const OverviewTab = ({
                 className="mx-n3 px-3"
               >
                 <div className="vstack gap-3">
-                  {eventPersonList && eventPersonList.length > 0
-                    ? eventPersonList.map((person, index) => {
+                  {eventUserList && eventUserList.length > 0
+                    ? eventUserList.map((user, index) => {
                         return (
                           <div className="vstack gap-3" key={index}>
                             <div className="d-flex align-items-center">
                               <div className="flex-grow-1">
                                 <h5 className="fs-13 mb-0">
                                   <Link to="#" className="text-dark d-block">
-                                    {person || "Nancy Martino"}
+                                    {user.username || "Nancy Martino"}
                                   </Link>
                                 </h5>
                               </div>
                               <div className="flex-shrink-0">
                                 <div className="d-flex align-items-center gap-1">
-                                  <button
-                                    type="button"
-                                    className="btn btn-light btn-sm"
+                                  <Link
+                                    to={`/apps-events-user-medialist/${user.id}`}
+                                    className="btn btn-light view-btn"
                                   >
                                     Yükledikleri
-                                  </button>
+                                  </Link>
                                 </div>
                               </div>
                             </div>

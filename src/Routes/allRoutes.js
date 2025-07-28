@@ -6,6 +6,7 @@ import UpdateEvent from "../pages/Events/UpdateEvent/index";
 import AllEvents from "../pages/Events/AllEvents/index";
 import AddEvent from "../pages/Events/AddEvent/index";
 import EventOverview from "../pages/Events/EventOverview/index";
+import UserMediaList from "../pages/Events/EventOverview/UserMediaList";
 
 //Dashboard
 import DashboardAnalytics from "../pages/DashboardAnalytics";
@@ -268,6 +269,7 @@ const authProtectedRoutes = [
   { path: "/apps-events-overview/:id", component: <EventOverview /> },
   { path: "/apps-events-add", component: <AddEvent /> },
   { path: "/apps-events-update/:id", component: <UpdateEvent /> },
+  { path: "/apps-events-user-medialist/:id", component: <UserMediaList /> },
 
   { path: "/apps-calendar", component: <Calendar /> },
   { path: "/apps-calendar-month-grid", component: <MonthGrid /> },

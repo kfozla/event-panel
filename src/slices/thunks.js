@@ -9,6 +9,8 @@ export * from "./auth/profile/thunk";
 
 //Events
 export * from "./events/thunk";
+//Users
+export * from "./users/thunk";
 
 //Calendar
 export * from "./calendar/thunk";
