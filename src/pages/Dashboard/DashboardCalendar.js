@@ -8,13 +8,16 @@ import { useSelector, useDispatch } from "react-redux";
 import { getEvents as onGetEvents } from "../../slices/thunks";
 import trLocale from "@fullcalendar/core/locales/tr";
 
-function DashboardCalendar() {
-  const dispatch = useDispatch();
-  const events = useSelector((state) => state.Calendar?.events || []);
+import { useNavigate } from "react-router-dom";
 
-  useEffect(() => {
-    dispatch(onGetEvents());
-  }, [dispatch]);
+function DashboardCalendar({ calendarData }) {
+  const navigate = useNavigate();
+
+  // Event tıklanınca overview sayfasına yönlendir
+  const handleEventClick = (info) => {
+    const eventId = info.event.id;
+    navigate(`/apps-events-overview/${eventId}`);
+  };
 
   return (
     <Card className="card-h-100">
@@ -30,13 +33,11 @@ function DashboardCalendar() {
             center: "title",
             right: "dayGridMonth,dayGridWeek,dayGridDay,listWeek",
           }}
-          events={events}
+          events={calendarData}
           editable={false}
           droppable={false}
           selectable={false}
-          dateClick={undefined}
-          eventClick={undefined}
-          drop={undefined}
+          eventClick={handleEventClick}
           height={680}
           locales={[trLocale]}
           locale="tr"
@@ -45,5 +46,9 @@ function DashboardCalendar() {
     </Card>
   );
 }
+
+const style = document.createElement("style");
+style.innerHTML = `.fc-event { cursor: pointer !important; }`;
+document.head.appendChild(style);
 
 export default DashboardCalendar;

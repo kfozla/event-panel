@@ -7,32 +7,21 @@ import { getProjectChartsData } from "../../slices/thunks";
 import { createSelector } from "reselect";
 import { set } from "lodash";
 
-const ProjectsOverview = () => {
-  const dispatch = useDispatch();
-
-  const [chartData, setchartData] = useState([]);
-
-  const selectprojectData = createSelector(
-    (state) => state.DashboardProject,
-    (projectData) => projectData.projectData
-  );
+const ProjectsOverview = ({ tabloData }) => {
   // Inside your component
-  const projectData = useSelector(selectprojectData);
-  console.log("Project Data:", projectData[0]);
 
   const [eventData, setEventData] = useState([]);
 
   const [year, setYear] = useState("");
 
   useEffect(() => {
-    setchartData(projectData);
     setYear(new Date().getFullYear());
-  }, [projectData]);
+  }, []);
 
   // Yıl değiştikçe ilgili yılın ilk elemanını gönder
   useEffect(() => {
-    if (Array.isArray(projectData) && projectData.length > 0) {
-      const filtered = projectData.filter((item) => item.year === year);
+    if (Array.isArray(tabloData) && tabloData.length > 0) {
+      const filtered = tabloData.filter((item) => item.year === year);
       if (filtered.length > 0) {
         setEventData([filtered[0]]);
       } else {
@@ -41,15 +30,7 @@ const ProjectsOverview = () => {
     } else {
       setEventData([]);
     }
-  }, [projectData, year]);
-
-  const onChangeChartPeriod = (pType) => {
-    dispatch(getProjectChartsData(pType));
-  };
-
-  useEffect(() => {
-    dispatch(getProjectChartsData("all"));
-  }, [dispatch]);
+  }, [tabloData, year]);
 
   return (
     <React.Fragment>
