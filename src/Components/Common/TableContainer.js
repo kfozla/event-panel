@@ -254,11 +254,23 @@ const TableContainer = ({
       <Row className="align-items-center mt-2 g-3 text-center text-sm-start">
         <div className="col-sm">
           <div className="text-muted">
-            Showing
+            Toplam <span className="fw-semibold">{data.length}</span> kayıttan
             <span className="fw-semibold ms-1">
-              {getState().pagination.pageSize}
+              {data.length === 0
+                ? 0
+                : getState().pagination.pageIndex *
+                    getState().pagination.pageSize +
+                  1}
             </span>{" "}
-            of <span className="fw-semibold">{data.length}</span> Results
+            ile{" "}
+            <span className="fw-semibold ms-1">
+              {Math.min(
+                (getState().pagination.pageIndex + 1) *
+                  getState().pagination.pageSize,
+                data.length
+              )}
+            </span>
+            {" arasında görüntüleniyor"}
           </div>
         </div>
         <div className="col-sm-auto">

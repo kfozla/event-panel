@@ -34,7 +34,7 @@ const OverviewTab = ({
   return (
     <React.Fragment>
       <Row>
-        <Col xl={9} lg={8}>
+        <Col>
           <Card>
             <CardBody>
               <div className="text-muted">
@@ -94,52 +94,6 @@ const OverviewTab = ({
                   </Row>
                 </div>
               </div>
-            </CardBody>
-          </Card>
-        </Col>
-
-        <Col xl={3} lg={4}>
-          <Card>
-            <CardHeader className="align-items-center d-flex border-bottom-dashed text-center">
-              <h4 className="card-title mb-0 flex-grow-1">Kişiler</h4>
-            </CardHeader>
-
-            <CardBody>
-              <SimpleBar
-                data-simplebar
-                style={{ height: "100%", maxHeight: "420px" }}
-                className="mx-n3 px-3"
-              >
-                <div className="vstack gap-3">
-                  {eventUserList && eventUserList.length > 0
-                    ? eventUserList.map((user, index) => {
-                        return (
-                          <div className="vstack gap-3" key={index}>
-                            <div className="d-flex align-items-center">
-                              <div className="flex-grow-1">
-                                <h5 className="fs-13 mb-0">
-                                  <Link to="#" className="text-dark d-block">
-                                    {user.username || "Nancy Martino"}
-                                  </Link>
-                                </h5>
-                              </div>
-                              <div className="flex-shrink-0">
-                                <div className="d-flex align-items-center gap-1">
-                                  <Link
-                                    to={`/apps-events-user-medialist/${user.id}`}
-                                    className="btn btn-light view-btn"
-                                  >
-                                    Yükledikleri
-                                  </Link>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })
-                    : null}
-                </div>
-              </SimpleBar>
             </CardBody>
           </Card>
         </Col>

@@ -76,12 +76,10 @@ function EventTable() {
           <Link
             to={`/apps-events-overview/${event.id}`}
             style={{
-              fontSize: "1.15rem",
+              fontSize: "1rem",
               textDecoration: "none",
-              fontWeight: "600",
-              padding: "4px 10px",
-              borderRadius: "6px",
-              transition: "box-shadow 0.2s",
+              color: "#010101ff",
+              padding: "4px 4px",
             }}
           >
             {event.name}
@@ -160,22 +158,31 @@ function EventTable() {
       accessorKey: "id",
       cell: (cell) => {
         const event = cell.row.original;
-
         return (
-          <div className="d-flex flex-column gap-2">
+          <div className="d-flex flex-row gap-2 justify-content-center">
             <button
               type="button"
               className="btn btn-sm btn-danger"
               onClick={() => onClickData(event)}
+              title="Sil"
             >
-              Sil
+              <i className="ri-delete-bin-line"></i>
             </button>
             <Link
               to={`/apps-events-update/${event.id}`}
               className="btn btn-sm btn-primary"
               style={{ color: "#fff" }}
+              title="Düzenle"
             >
-              Düzenle
+              <i className="ri-edit-2-line"></i>
+            </Link>
+            <Link
+              to={`/apps-events-overview/${event.id}`}
+              className="btn btn-sm btn-info"
+              style={{ color: "#fff" }}
+              title="Görüntüle"
+            >
+              <i className="ri-eye-line"></i>
             </Link>
           </div>
         );

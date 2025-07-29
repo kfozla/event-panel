@@ -39,6 +39,7 @@ const TeamTab = ({ eventID }) => {
   const [deleteModal, setDeleteModal] = React.useState(false);
 
   useEffect(() => {
+    if (!eventID) return; // eventID yoksa fetch etme
     const fetchUsers = async () => {
       try {
         const res = await getEventUserList(eventID);
@@ -91,7 +92,23 @@ const TeamTab = ({ eventID }) => {
       setUserList(usersWithMedia);
     }
   };
-  console.log("User List:", userList);
+
+  // Pagination state
+  const [pageIndex, setPageIndex] = React.useState(0);
+  const [pageSize, setPageSize] = React.useState(10);
+
+  // Hesaplanan sayfa sayısı
+  const pageCount = Math.ceil(userList.length / pageSize);
+  const pagedUsers = userList.slice(
+    pageIndex * pageSize,
+    (pageIndex + 1) * pageSize
+  );
+
+  // Pagination butonları
+  const getPageOptions = () => {
+    return Array.from({ length: pageCount }, (_, i) => i);
+  };
+
   return (
     <React.Fragment>
       <ToastContainer />
@@ -116,7 +133,7 @@ const TeamTab = ({ eventID }) => {
       </Row>
 
       <div className="team-list list-view-filter">
-        {userList.map((user, index) => (
+        {pagedUsers.map((user, index) => (
           <Card className="team-box" key={index}>
             <CardBody className="px-4">
               <Row className="align-items-center team-row">
@@ -172,53 +189,71 @@ const TeamTab = ({ eventID }) => {
         <div className="col-sm-6">
           <div>
             <p className="mb-sm-0">
-              Showing 1 to 10 of {userList.length} entries
+              Toplam <span className="fw-semibold">{userList.length}</span>{" "}
+              kayıttan
+              <span className="fw-semibold ms-1">
+                {userList.length === 0 ? 0 : pageIndex * pageSize + 1}
+              </span>
+              ile
+              <span className="fw-semibold ms-1">
+                {Math.min((pageIndex + 1) * pageSize, userList.length)}
+              </span>
+              {" arasında görüntüleniyor"}
             </p>
           </div>
         </div>
         <div className="col-sm-6">
           <ul className="pagination pagination-separated justify-content-center justify-content-sm-end mb-sm-0">
-            <li className="page-item disabled">
-              {" "}
-              <Link to="#" className="page-link">
+            <li
+              className={pageIndex === 0 ? "page-item disabled" : "page-item"}
+            >
+              <Link
+                to="#"
+                className="page-link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (pageIndex > 0) setPageIndex(pageIndex - 1);
+                }}
+              >
                 <i className="mdi mdi-chevron-left"></i>
-              </Link>{" "}
+              </Link>
             </li>
-            <li className="page-item">
-              {" "}
-              <Link to="#" className="page-link">
-                1
-              </Link>{" "}
-            </li>
-            <li className="page-item active">
-              {" "}
-              <Link to="#" className="page-link">
-                2
-              </Link>{" "}
-            </li>
-            <li className="page-item">
-              {" "}
-              <Link to="#" className="page-link">
-                3
-              </Link>{" "}
-            </li>
-            <li className="page-item">
-              {" "}
-              <Link to="#" className="page-link">
-                4
-              </Link>{" "}
-            </li>
-            <li className="page-item">
-              {" "}
-              <Link to="#" className="page-link">
-                5
-              </Link>{" "}
-            </li>
-            <li className="page-item">
-              {" "}
-              <Link to="#" className="page-link">
+            {getPageOptions().map((item) => (
+              <li
+                key={item}
+                className={
+                  pageIndex === item ? "page-item active" : "page-item"
+                }
+              >
+                <Link
+                  to="#"
+                  className="page-link"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPageIndex(item);
+                  }}
+                >
+                  {item + 1}
+                </Link>
+              </li>
+            ))}
+            <li
+              className={
+                pageIndex === pageCount - 1 || pageCount === 0
+                  ? "page-item disabled"
+                  : "page-item"
+              }
+            >
+              <Link
+                to="#"
+                className="page-link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (pageIndex < pageCount - 1) setPageIndex(pageIndex + 1);
+                }}
+              >
                 <i className="mdi mdi-chevron-right"></i>
-              </Link>{" "}
+              </Link>
             </li>
           </ul>
         </div>

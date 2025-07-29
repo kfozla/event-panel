@@ -15,7 +15,7 @@ import DashboardEcommerce from "../pages/DashboardEcommerce";
 import Dashboardjob from "../pages/Dashboardjob/index";
 
 import DashboardCrypto from "../pages/DashboardCrypto";
-import DashboardProject from "../pages/DashboardProject";
+import DashboardProject from "../pages/Dashboard";
 import DashboardNFT from "../pages/DashboardNFT";
 
 //Calendar
@@ -256,7 +256,7 @@ import PageBlogOverview from "../pages/Pages/Blogs/Overview";
 const authProtectedRoutes = [
   { path: "/dashboard-analytics", component: <DashboardAnalytics /> },
   { path: "/dashboard-crm", component: <DashboardCrm /> },
-  { path: "/dashboard", component: <DashboardEcommerce /> },
+  { path: "/dashboard", component: <DashboardProject /> },
   { path: "/dashboard-jobs", component: <Dashboardjob /> },
   { path: "/index", component: <DashboardEcommerce /> },
   { path: "/dashboard-crypto", component: <DashboardCrypto /> },

@@ -266,7 +266,6 @@ const Section = ({ eventId }) => {
         <Col lg={12}>
           <TabContent activeTab={activeTab} className="text-muted">
             <TabPane tabId="1">
-              {console.log("test2")}
               <OverviewTab
                 eventDescription={eventData ? eventData.description : ""}
                 eventCreatedOn={eventData ? eventData.createdOn : ""}
@@ -278,17 +277,14 @@ const Section = ({ eventId }) => {
               />
             </TabPane>
             <TabPane tabId="2">
-              {console.log("test3")}
               <DocumentsTab mediaList={eventData ? eventData.mediaList : []} />
             </TabPane>
             <TabPane tabId="3">
-              {console.log("test4")}
               <TeamTab
                 userList={eventData ? eventData.userList : []}
                 eventID={eventData ? eventData.id : null}
               />
             </TabPane>
-            {console.log("test5")}
           </TabContent>
         </Col>
       </Row>

@@ -12,10 +12,17 @@ import {
   UncontrolledDropdown,
 } from "reactstrap";
 import { getAllUsers, getUserMediaCount } from "../../../api/user";
+import { deleteMedia } from "../../../api/media";
+import DeleteModal from "../../../Components/Common/DeleteModal";
+import { ToastContainer } from "react-toastify";
 import { useEffect, useState } from "react";
 
 const DocumentsTab = ({ mediaList }) => {
   const [usernames, setUsernames] = useState([]);
+  const [media, setMedia] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [mediaListState, setMediaListState] = useState(mediaList || []);
+  const URL = "http://localhost:5176/";
   useEffect(() => {
     async function fetchUsernames() {
       const users = await getAllUsers();
@@ -33,11 +40,45 @@ const DocumentsTab = ({ mediaList }) => {
     }
     if (mediaList && mediaList.length > 0) {
       fetchUsernames();
+      setMediaListState(mediaList);
     }
   }, [mediaList]);
-  console.log("medialist", mediaList);
+  const handleDownload = async (url, filename) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("İndirme hatası:", err);
+    }
+  };
+
+  const onClickData = (media) => {
+    setMedia(media);
+    setDeleteModal(true);
+  };
+
+  const handleDeleteEventList = async () => {
+    if (media) {
+      await deleteMedia(media.id);
+      setDeleteModal(false);
+      setMediaListState((prev) => prev.filter((m) => m.id !== media.id));
+    }
+  };
+
   return (
     <React.Fragment>
+      <ToastContainer />
+      <DeleteModal
+        show={deleteModal}
+        onDeleteClick={() => handleDeleteEventList()}
+        onCloseClick={() => setDeleteModal(false)}
+      />
       <Card>
         <CardBody>
           <div className="d-flex align-items-center mb-4">
@@ -60,8 +101,8 @@ const DocumentsTab = ({ mediaList }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {mediaList && mediaList.length > 0 ? (
-                      mediaList.map((media, index) => (
+                    {mediaListState && mediaListState.length > 0 ? (
+                      mediaListState.map((media, index) => (
                         <tr key={index}>
                           <td>
                             <div className="d-flex align-items-center">
@@ -69,7 +110,7 @@ const DocumentsTab = ({ mediaList }) => {
                                 <div className="avatar-title bg-light text-primary rounded fs-24">
                                   {/* TODO */}
                                   <img
-                                    src="http://localhost:5176/uploads/english.png"
+                                    src={`${URL + media.filePath}`}
                                     alt={media.fileName}
                                     height={40}
                                     width={40}
@@ -85,14 +126,29 @@ const DocumentsTab = ({ mediaList }) => {
                               </div>
                             </div>
                           </td>
-                          <td>Zip File</td>
-                          <td>4.57 MB</td>
-                          <td>{mediaList[index].uploadedOn}</td>
+                          <td>{media.fileType}</td>
+                          <td>
+                            {(media.fileSize / 1024 / 1024).toFixed(2)} MB
+                          </td>
+                          <td>
+                            {media.uploadedOn
+                              ? new Date(media.uploadedOn).toLocaleString(
+                                  "tr-TR",
+                                  {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )
+                              : ""}
+                          </td>
                           <td>
                             {usernames[media.userId]?.username || "Loading..."}
-                          </td>{" "}
+                          </td>
                           <td>
-                            <UncontrolledDropdown>
+                            <UncontrolledDropdown direction="left">
                               <DropdownToggle
                                 tag="a"
                                 href="#"
@@ -102,20 +158,36 @@ const DocumentsTab = ({ mediaList }) => {
                               </DropdownToggle>
                               <DropdownMenu className="dropdown-menu-end">
                                 <li>
-                                  <DropdownItem>
+                                  <DropdownItem
+                                    onClick={() =>
+                                      window.open(
+                                        URL + media.filePath,
+                                        "_blank"
+                                      )
+                                    }
+                                  >
                                     <i className="ri-eye-fill me-2 align-bottom text-muted"></i>
                                     Görüntüle
                                   </DropdownItem>
                                 </li>
                                 <li>
-                                  <DropdownItem>
+                                  <DropdownItem
+                                    onClick={() =>
+                                      handleDownload(
+                                        URL + media.filePath,
+                                        media.fileName
+                                      )
+                                    }
+                                  >
                                     <i className="ri-download-2-fill me-2 align-bottom text-muted"></i>
                                     İndir
                                   </DropdownItem>
                                 </li>
                                 <li className="dropdown-divider"></li>
                                 <li>
-                                  <DropdownItem>
+                                  <DropdownItem
+                                    onClick={() => onClickData(media)}
+                                  >
                                     <i className="ri-delete-bin-5-fill me-2 align-bottom text-muted"></i>
                                     Sil
                                   </DropdownItem>
@@ -135,12 +207,13 @@ const DocumentsTab = ({ mediaList }) => {
                   </tbody>
                 </Table>
               </div>
+              {/* Pagination can be added here if needed
               <div className="text-center mt-3">
                 <Link to="#" className="text-primary">
                   <i className="mdi mdi-loading mdi-spin fs-20 align-middle me-2"></i>{" "}
                   Load more{" "}
                 </Link>
-              </div>
+              </div> */}
             </Col>
           </Row>
         </CardBody>

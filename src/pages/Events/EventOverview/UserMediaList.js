@@ -16,6 +16,9 @@ import { useParams } from "react-router-dom";
 import { deleteMedia } from "../../../api/media";
 import DeleteModal from "../../../Components/Common/DeleteModal";
 import { ToastContainer } from "react-toastify";
+import { CardHeader } from "reactstrap";
+import SimpleBar from "simplebar-react";
+import { getEventUserList } from "../../../api/events";
 
 const UserMediaList = () => {
   const { id: userId } = useParams();
@@ -23,8 +26,43 @@ const UserMediaList = () => {
   const [mediaList, setMediaList] = React.useState([]);
   const URL = "http://localhost:5176/";
 
+  const [eventId, setEventId] = useState();
+
   const [media, setMedia] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
+  const [eventUserList, setEventUserList] = useState([]);
+
+  // eventId güncellendiğinde eventUserList'i fetch etme işlemini userId ile birlikte ana useEffect'e taşıyoruz
+  useEffect(() => {
+    const fetchData = async () => {
+      if (userId) {
+        try {
+          const userRes = await import("../../../api/user").then((mod) =>
+            mod.getUserById(userId)
+          );
+          setEventId(userRes.data?.eventId);
+          setUsername(userRes.data?.username || "Unknown");
+          const mediaRes = await import("../../../api/user").then((mod) =>
+            mod.getUserMediaList(userId)
+          );
+          setMediaList(mediaRes.data || []);
+          // eventId geldiyse burada user listesi de çekilsin
+          console.log("UserRes:", userRes.data.eventId);
+          if (userRes.data?.eventId) {
+            const userList = await getEventUserList(userRes.data.eventId);
+            setEventUserList(userList || []);
+          } else {
+            setEventUserList([]);
+          }
+        } catch (err) {
+          setUsername("Unknown");
+          setMediaList([]);
+          setEventUserList([]);
+        }
+      }
+    };
+    fetchData();
+  }, [userId]);
 
   const onClickData = (media) => {
     setMedia(media);
@@ -70,6 +108,7 @@ const UserMediaList = () => {
           const userRes = await import("../../../api/user").then((mod) =>
             mod.getUserById(userId)
           );
+          setEventId(userRes.data?.eventId);
           setUsername(userRes.data?.username || "Unknown");
           const mediaRes = await import("../../../api/user").then((mod) =>
             mod.getUserMediaList(userId)
@@ -83,6 +122,10 @@ const UserMediaList = () => {
     };
     fetchData();
   }, [userId]);
+  const truncateText = (text, maxLength = 40) => {
+    if (!text) return "";
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+  };
 
   return (
     <React.Fragment>
@@ -94,15 +137,15 @@ const UserMediaList = () => {
       />
       <div className="page-content">
         <Container fluid>
-          <Card>
-            <CardBody>
-              <div className="d-flex align-items-center mb-4">
-                <h5 className="card-title flex-grow-1">
-                  {username} kullanıcısının Yükledikleri
-                </h5>
-              </div>
-              <Row>
-                <Col lg={12}>
+          <Row className="g-4 mb-3">
+            <Col xl={9} lg={8}>
+              <Card>
+                <CardBody>
+                  <div className="d-flex align-items-center mb-4">
+                    <h5 className="card-title flex-grow-1">
+                      {username} kullanıcısının Yükledikleri
+                    </h5>
+                  </div>
                   <div className="table-responsive table-card">
                     <Table className="table-borderless align-middle mb-0">
                       <thead className="table-light">
@@ -133,7 +176,7 @@ const UserMediaList = () => {
                                   <div className="ms-3 flex-grow-1">
                                     <h5 className="fs-14 mb-0">
                                       <Link to="#" className="text-dark">
-                                        {media.fileName}
+                                        {truncateText(media.fileName)}
                                       </Link>
                                     </h5>
                                   </div>
@@ -144,9 +187,22 @@ const UserMediaList = () => {
                                 {(media.fileSize / 1024 / 1024).toFixed(2)} MB
                               </td>
                               {/* TODO: Boyut API'den alınabilir */}
-                              <td>{media.uploadedOn}</td>
                               <td>
-                                <UncontrolledDropdown>
+                                {media.uploadedOn
+                                  ? new Date(media.uploadedOn).toLocaleString(
+                                      "tr-TR",
+                                      {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      }
+                                    )
+                                  : ""}
+                              </td>
+                              <td>
+                                <UncontrolledDropdown direction="left">
                                   <DropdownToggle
                                     tag="a"
                                     href="#"
@@ -205,10 +261,57 @@ const UserMediaList = () => {
                       </tbody>
                     </Table>
                   </div>
-                </Col>
-              </Row>
-            </CardBody>
-          </Card>
+                </CardBody>
+              </Card>
+            </Col>
+            <Col xl={3} lg={4}>
+              <Card>
+                <CardHeader className="align-items-center d-flex border-bottom-dashed text-center">
+                  <h4 className="card-title mb-0 flex-grow-1">Kişiler</h4>
+                </CardHeader>
+                <CardBody>
+                  <SimpleBar
+                    data-simplebar
+                    style={{ height: "100%", maxHeight: "420px" }}
+                    className="mx-n3 px-3"
+                  >
+                    <div className="vstack gap-3">
+                      {eventUserList && eventUserList.length > 0
+                        ? eventUserList.map((user, index) => {
+                            return (
+                              <div className="vstack gap-3" key={index}>
+                                <div className="d-flex align-items-center">
+                                  <div className="flex-grow-1">
+                                    <h5 className="fs-13 mb-0">
+                                      <Link
+                                        to="#"
+                                        className="text-dark d-block"
+                                      >
+                                        {user.username || "Nancy Martino"}
+                                      </Link>
+                                    </h5>
+                                  </div>
+                                  <div className="flex-shrink-0">
+                                    <div className="d-flex align-items-center gap-1">
+                                      <Link
+                                        to={`/apps-events-user-medialist/${user.id}`}
+                                        className="btn btn-light view-btn"
+                                      >
+                                        Yükledikleri
+                                      </Link>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })
+                        : null}
+                    </div>
+                  </SimpleBar>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
         </Container>
       </div>
     </React.Fragment>
