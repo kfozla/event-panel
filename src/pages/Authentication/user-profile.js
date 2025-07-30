@@ -15,6 +15,7 @@ const formatDate = (dateString) => {
 };
 
 const UserProfile = () => {
+  const URL = "http://localhost:5176/"; // API URL
   const [authUser, setAuthUser] = useState({});
 
   useEffect(() => {
@@ -24,6 +25,7 @@ const UserProfile = () => {
   }, []);
 
   document.title = "Profile | Velzon - React Admin & Dashboard Template";
+  console.log("authUser:", authUser);
   return (
     <React.Fragment>
       <div className="page-content">
@@ -38,7 +40,7 @@ const UserProfile = () => {
                       <div className="d-flex align-items-center mb-4">
                         {authUser.profilePictureUrl ? (
                           <img
-                            src={authUser.profilePictureUrl}
+                            src={URL + authUser.profilePictureUrl}
                             alt="Profile"
                             className="rounded-circle avatar-lg img-thumbnail me-3"
                             style={{

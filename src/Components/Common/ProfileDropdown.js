@@ -13,6 +13,7 @@ import avatar1 from "../../assets/images/users/avatar-1.jpg";
 import { createSelector } from "reselect";
 
 const ProfileDropdown = () => {
+  const URL = "http://localhost:5176/"; // API URL
   const profiledropdownData = createSelector(
     (state) => state.Profile,
     (user) => user.user
@@ -43,11 +44,27 @@ const ProfileDropdown = () => {
       >
         <DropdownToggle tag="button" type="button" className="btn">
           <span className="d-flex align-items-center">
-            <img
-              className="rounded-circle header-profile-user"
-              src={avatar1}
-              alt="Header Avatar"
-            />
+            {authUser && authUser.profilePictureUrl ? (
+              <img
+                className="rounded-circle header-profile-user"
+                src={URL + authUser.profilePictureUrl}
+                alt="Header Avatar"
+              />
+            ) : (
+              <div
+                className="rounded-circle header-profile-user d-flex align-items-center justify-content-center bg-light"
+                style={{
+                  width: 40,
+                  height: 40,
+                  background: "#e0e0e0",
+                  color: "#888",
+                  fontSize: 20,
+                  fontWeight: 600,
+                }}
+              >
+                <i className="ri-user-line"></i>
+              </div>
+            )}
             <span className="text-start ms-xl-2">
               <span className="d-none d-xl-inline-block ms-1 fw-medium user-name-text">
                 {authUser.username || ""}
