@@ -189,28 +189,6 @@ const Section = ({ eventId }) => {
                       </div>
                     </Row>
                   </div>
-                  <div className="col-md-auto">
-                    <div className="hstack gap-1 flex-wrap">
-                      <button
-                        type="button"
-                        className="btn py-0 fs-16 favourite-btn active"
-                      >
-                        <i className="ri-star-fill"></i>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn py-0 fs-16 text-dark"
-                      >
-                        <i className="ri-share-line"></i>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn py-0 fs-16 text-dark"
-                      >
-                        <i className="ri-flag-line"></i>
-                      </button>
-                    </div>
-                  </div>
                 </Row>
 
                 <Nav className="nav-tabs-custom border-bottom-0" role="tablist">

@@ -20,7 +20,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // action
-import { registerUser, apiError, resetRegisterFlag } from "../../slices/thunks";
+import { apiError, resetRegisterFlag } from "../../slices/thunks";
 
 //redux
 import { useSelector, useDispatch } from "react-redux";
@@ -31,6 +31,7 @@ import { Link, useNavigate } from "react-router-dom";
 import logoLight from "../../assets/images/bocek.svg";
 import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
 import { createSelector } from "reselect";
+import { registerUser } from "../../api/authentication";
 
 const Register = () => {
   const history = useNavigate();
@@ -42,20 +43,50 @@ const Register = () => {
 
     initialValues: {
       email: "",
-      first_name: "",
+      username: "",
+      name: "",
+      surname: "",
       password: "",
       confirm_password: "",
     },
     validationSchema: Yup.object({
       email: Yup.string().required("Lütfen email adresinizi girin"),
-      first_name: Yup.string().required("Lütfen kullanıcı adınızı girin"),
+      username: Yup.string().required("Lütfen kullanıcı adınızı girin"),
+      name: Yup.string().required("Lütfen isminizi girin"),
+      surname: Yup.string().required("Lütfen soyisminizi girin"),
       password: Yup.string().required("Lütfen şifrenizi girin"),
       confirm_password: Yup.string()
         .oneOf([Yup.ref("password")], "Şifreler eşleşmiyor")
         .required("Lütfen şifrenizi onaylayın"),
     }),
-    onSubmit: (values) => {
-      dispatch(registerUser(values));
+
+    onSubmit: async (values) => {
+      const payload = {
+        username: values.username,
+        firstName: values.name,
+        lastName: values.surname,
+        email: values.email,
+        password: values.password,
+      };
+      await registerUser(payload)
+        .then((res) => {
+          // Tokenları localStorage'a kaydet
+          console.log("Registration successful:", res);
+          localStorage.setItem("accessToken", res.accessToken);
+          localStorage.setItem("refreshToken", res.refreshToken);
+          toast.success(
+            "Hesabınız başarıyla oluşturuldu. Giriş ekranına yönlendiriliyorsunuz..."
+          );
+          setTimeout(() => history("/login"), 3000);
+        })
+        .catch((error) => {
+          console.log(error.response?.data); // Backend'in döndürdüğü hata mesajı
+
+          toast.error(
+            "Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin."
+          );
+          dispatch(apiError(error.message));
+        });
     },
   });
 
@@ -146,7 +177,84 @@ const Register = () => {
                             </div>
                           </Alert>
                         ) : null}
-
+                        {/* İsim ve Soyisim alanları yan yana */}
+                        <div className="mb-3 d-flex gap-2">
+                          <div style={{ flex: 1 }}>
+                            <Label htmlFor="name" className="form-label">
+                              İsim <span className="text-danger">*</span>
+                            </Label>
+                            <Input
+                              name="name"
+                              type="text"
+                              placeholder="İsim girin"
+                              onChange={validation.handleChange}
+                              onBlur={validation.handleBlur}
+                              value={validation.values.name || ""}
+                              invalid={
+                                validation.touched.name &&
+                                validation.errors.name
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {validation.touched.name &&
+                            validation.errors.name ? (
+                              <FormFeedback type="invalid">
+                                <div>{validation.errors.name}</div>
+                              </FormFeedback>
+                            ) : null}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <Label htmlFor="surname" className="form-label">
+                              Soyisim <span className="text-danger">*</span>
+                            </Label>
+                            <Input
+                              name="surname"
+                              type="text"
+                              placeholder="Soyisim girin"
+                              onChange={validation.handleChange}
+                              onBlur={validation.handleBlur}
+                              value={validation.values.surname || ""}
+                              invalid={
+                                validation.touched.surname &&
+                                validation.errors.surname
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {validation.touched.surname &&
+                            validation.errors.surname ? (
+                              <FormFeedback type="invalid">
+                                <div>{validation.errors.surname}</div>
+                              </FormFeedback>
+                            ) : null}
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <Label htmlFor="username" className="form-label">
+                            Kullanıcı Adı <span className="text-danger">*</span>
+                          </Label>
+                          <Input
+                            name="username"
+                            type="text"
+                            placeholder="Kullanıcı adı girin"
+                            onChange={validation.handleChange}
+                            onBlur={validation.handleBlur}
+                            value={validation.values.username || ""}
+                            invalid={
+                              validation.touched.username &&
+                              validation.errors.username
+                                ? true
+                                : false
+                            }
+                          />
+                          {validation.touched.username &&
+                          validation.errors.username ? (
+                            <FormFeedback type="invalid">
+                              <div>{validation.errors.username}</div>
+                            </FormFeedback>
+                          ) : null}
+                        </div>
                         <div className="mb-3">
                           <Label htmlFor="useremail" className="form-label">
                             Email <span className="text-danger">*</span>
@@ -171,31 +279,6 @@ const Register = () => {
                           validation.errors.email ? (
                             <FormFeedback type="invalid">
                               <div>{validation.errors.email}</div>
-                            </FormFeedback>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <Label htmlFor="username" className="form-label">
-                            Kullanıcı Adı <span className="text-danger">*</span>
-                          </Label>
-                          <Input
-                            name="first_name"
-                            type="text"
-                            placeholder="Kullanıcı adı girin"
-                            onChange={validation.handleChange}
-                            onBlur={validation.handleBlur}
-                            value={validation.values.first_name || ""}
-                            invalid={
-                              validation.touched.first_name &&
-                              validation.errors.first_name
-                                ? true
-                                : false
-                            }
-                          />
-                          {validation.touched.first_name &&
-                          validation.errors.first_name ? (
-                            <FormFeedback type="invalid">
-                              <div>{validation.errors.first_name}</div>
                             </FormFeedback>
                           ) : null}
                         </div>

@@ -14,91 +14,74 @@ import {
   Spinner,
 } from "reactstrap";
 import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
+import apiClient from "../../api/apiClient";
 
 //redux
-import { useSelector, useDispatch } from "react-redux";
 
-import { Link } from "react-router-dom";
-import withRouter from "../../Components/Common/withRouter";
-// Formik validation
+import { Link, useNavigate } from "react-router-dom";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-
-// actions
-import { loginUser, socialLogin, resetLoginFlag } from "../../slices/thunks";
-
 import logoLight from "../../assets/images/bocek.svg";
-import { createSelector } from "reselect";
-//import images
+import { loginUser, getLoggedInUser } from "../../api/authentication";
 
-const Login = (props) => {
-  const dispatch = useDispatch();
-  const selectLayoutState = (state) => state;
-  const loginpageData = createSelector(selectLayoutState, (state) => ({
-    user: state.Account.user,
-    error: state.Login.error,
-    loading: state.Login.loading,
-    errorMsg: state.Login.errorMsg,
-  }));
-  // Inside your component
-  const { user, error, loading, errorMsg } = useSelector(loginpageData);
-
-  const [userLogin, setUserLogin] = useState([]);
+const Login = () => {
+  const history = useNavigate();
   const [passwordShow, setPasswordShow] = useState(false);
-
-  useEffect(() => {
-    if (user && user) {
-      const updatedUserData =
-        process.env.REACT_APP_DEFAULTAUTH === "firebase"
-          ? user.multiFactor.user.email
-          : user.user.email;
-      const updatedUserPassword =
-        process.env.REACT_APP_DEFAULTAUTH === "firebase"
-          ? ""
-          : user.user.confirm_password;
-      setUserLogin({
-        email: updatedUserData,
-        password: updatedUserPassword,
-      });
-    }
-  }, [user]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const validation = useFormik({
-    // enableReinitialize : use this flag when initial values needs to be changed
     enableReinitialize: true,
-
     initialValues: {
-      email: userLogin.email || "admin@themesbrand.com" || "",
-      password: userLogin.password || "123456" || "",
+      username: "",
+      password: "",
     },
     validationSchema: Yup.object({
-      email: Yup.string().required("Lütfen Email Girin"),
+      username: Yup.string().required("Lütfen Kullanıcı Adı Girin"),
       password: Yup.string().required("Lütfen Şifrenizi Girin"),
     }),
-    onSubmit: (values) => {
-      dispatch(loginUser(values, props.router.navigate));
+    onSubmit: async (values) => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await loginUser({
+          username: values.username,
+          password: values.password,
+        });
+
+        const userObj = await getLoggedInUser(
+          res.user?.username || values.username
+        );
+        console.log("User Object:", userObj);
+        const authUser = {
+          ...userObj,
+
+          username: userObj.username,
+          first_name: userObj.firstName || "",
+          last_name: userObj.lastName || "",
+          token: res.accessToken,
+          role: userObj.role || "user",
+          refreshToken: res.refreshToken,
+          email: userObj.email || "",
+        };
+        sessionStorage.setItem("authUser", JSON.stringify(authUser));
+        sessionStorage.setItem("token", res.accessToken);
+        sessionStorage.setItem("refreshToken", res.refreshToken);
+
+        apiClient.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${res.accessToken}`;
+        // Başarılı girişte yönlendir
+        history("/dashboard");
+      } catch (err) {
+        setError(
+          err.response?.data?.message || "Giriş sırasında bir hata oluştu."
+        );
+      } finally {
+        setLoading(false);
+      }
     },
   });
-
-  const signIn = (type) => {
-    dispatch(socialLogin(type, props.router.navigate));
-  };
-
-  //handleTwitterLoginResponse
-  // const twitterResponse = e => {}
-
-  //for facebook and google authentication
-  const socialResponse = (type) => {
-    signIn(type);
-  };
-
-  useEffect(() => {
-    if (errorMsg) {
-      setTimeout(() => {
-        dispatch(resetLoginFlag());
-      }, 3000);
-    }
-  }, [dispatch, errorMsg]);
 
   document.title = "Basic SignIn | Velzon - React Admin & Dashboard Template";
   return (
@@ -131,9 +114,7 @@ const Login = (props) => {
                         Devam Etmek için lütfen giriş yapın.
                       </p>
                     </div>
-                    {error && error ? (
-                      <Alert color="danger"> {error} </Alert>
-                    ) : null}
+                    {error && <Alert color="danger"> {error} </Alert>}{" "}
                     <div className="p-2 mt-4">
                       <Form
                         onSubmit={(e) => {
@@ -144,28 +125,29 @@ const Login = (props) => {
                         action="#"
                       >
                         <div className="mb-3">
-                          <Label htmlFor="email" className="form-label">
-                            Email
+                          <Label htmlFor="username" className="form-label">
+                            Kullanıcı Adı
                           </Label>
                           <Input
-                            name="email"
+                            name="username"
                             className="form-control"
-                            placeholder="Email girin"
-                            type="email"
+                            placeholder="Kullanıcı adı girin"
+                            type="text"
                             onChange={validation.handleChange}
                             onBlur={validation.handleBlur}
-                            value={validation.values.email || ""}
+                            value={validation.values.username || ""}
                             invalid={
-                              validation.touched.email &&
-                              validation.errors.email
+                              validation.touched.username &&
+                              validation.errors.username
                                 ? true
                                 : false
                             }
+                            autoComplete="username"
                           />
-                          {validation.touched.email &&
-                          validation.errors.email ? (
+                          {validation.touched.username &&
+                          validation.errors.username ? (
                             <FormFeedback type="invalid">
-                              {validation.errors.email}
+                              {validation.errors.username}
                             </FormFeedback>
                           ) : null}
                         </div>
@@ -197,6 +179,7 @@ const Login = (props) => {
                                   ? true
                                   : false
                               }
+                              autoComplete="current-password"
                             />
                             {validation.touched.password &&
                             validation.errors.password ? (
@@ -233,15 +216,12 @@ const Login = (props) => {
                         <div className="mt-4">
                           <Button
                             color="success"
-                            disabled={error ? null : loading ? true : false}
+                            disabled={loading}
                             className="btn btn-success w-100"
                             type="submit"
                           >
                             {loading ? (
-                              <Spinner size="sm" className="me-2">
-                                {" "}
-                                Loading...{" "}
-                              </Spinner>
+                              <Spinner size="sm" className="me-2" />
                             ) : null}
                             Giriş Yap
                           </Button>
@@ -306,4 +286,4 @@ const Login = (props) => {
   );
 };
 
-export default withRouter(Login);
+export default Login;

@@ -17,10 +17,9 @@ export const getEventList = createAsyncThunk(
   async () => {
     try {
       const response = await getEvents();
-
       return response;
     } catch (error) {
-      return error;
+      return Promise.reject(error.response?.data?.message || error.message);
     }
   }
 );
@@ -31,7 +30,7 @@ export const getEventByIdList = createAsyncThunk(
       const response = await getEventById(id);
       return response;
     } catch (error) {
-      return error;
+      return Promise.reject(error.response?.data?.message || error.message);
     }
   }
 );
@@ -45,7 +44,7 @@ export const addEventList = createAsyncThunk(
       return response;
     } catch (error) {
       toast.error("event Added Failed", { autoClose: 3000 });
-      return error;
+      return Promise.reject(error.response?.data?.message || error.message);
     }
   }
 );
@@ -59,7 +58,7 @@ export const updateEventList = createAsyncThunk(
       return response;
     } catch (error) {
       toast.error("event Updated Failed", { autoClose: 3000 });
-      return error;
+      return Promise.reject(error.response?.data?.message || error.message);
     }
   }
 );
@@ -73,7 +72,7 @@ export const deleteEventList = createAsyncThunk(
       return id;
     } catch (error) {
       toast.error("event Delete Failed", { autoClose: 3000 });
-      return error;
+      return Promise.reject(error.response?.data?.message || error.message);
     }
   }
 );
@@ -84,7 +83,7 @@ export const getEventUserList = createAsyncThunk(
       const response = await getEventUserListApi(eventId);
       return response;
     } catch (error) {
-      return error;
+      return Promise.reject(error.response?.data?.message || error.message);
     }
   }
 );

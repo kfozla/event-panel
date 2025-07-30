@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Card,
@@ -24,6 +24,7 @@ import Dropzone from "react-dropzone";
 import { createEvent } from "../../../api/events";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
+import { use } from "react";
 
 const AddEvent = () => {
   const SingleOptions = [
@@ -40,7 +41,7 @@ const AddEvent = () => {
     endTime: "",
     thumbnailUrl: "",
     domainName: "",
-    personList: [""],
+
     mediaList: [],
   });
 
@@ -56,6 +57,12 @@ const AddEvent = () => {
   // Kapak resmi için url
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [selectedTheme, setSelectedTheme] = useState("");
+  const [panelUserId, setPanelUserId] = useState("");
+
+  useEffect(() => {
+    const authUser = JSON.parse(sessionStorage.getItem("authUser") || "null");
+    setPanelUserId(authUser?.id || "");
+  }, []);
 
   // Form submit fonksiyonu
   const handleSubmit = async (e) => {
@@ -72,9 +79,9 @@ const AddEvent = () => {
       endTime: endDate ? endDate[0] : "",
       thumbnailUrl: thumbnailUrl,
       theme: selectedTheme,
-      personList: ["yusuf", "yasin", "musa"],
-      mediaList: null,
+      userList: null,
       domainName: eventData.domainName || "",
+      panelUserId: panelUserId,
     };
     console.log("Payload:", payload);
     try {

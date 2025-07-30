@@ -1,165 +1,148 @@
 import React, { useState, useEffect } from "react";
-import { isEmpty } from "lodash";
-
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Alert,
-  CardBody,
-  Button,
-  Label,
-  Input,
-  FormFeedback,
-  Form,
-} from "reactstrap";
-
-// Formik Validation
-import * as Yup from "yup";
-import { useFormik } from "formik";
-
-//redux
-import { useSelector, useDispatch } from "react-redux";
-
+import { Container, Row, Col, Card, CardBody } from "reactstrap";
 import avatar from "../../assets/images/users/avatar-1.jpg";
-// actions
-import { editProfile, resetProfileFlag } from "../../slices/thunks";
-import { createSelector } from "reselect";
+
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("tr-TR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 const UserProfile = () => {
-  const dispatch = useDispatch();
-
-  const [email, setemail] = useState("admin@gmail.com");
-  const [idx, setidx] = useState("1");
-
-  const [userName, setUserName] = useState("Admin");
-
-  const selectLayoutState = (state) => state.Profile;
-  const userprofileData = createSelector(
-    selectLayoutState,
-    (state) => ({
-      user: state.user,
-      success: state.success,
-      error: state.error
-    })
-  );
-  // Inside your component
-  const {
-    user, success, error 
-  } = useSelector(userprofileData);
+  const [authUser, setAuthUser] = useState({});
 
   useEffect(() => {
     if (sessionStorage.getItem("authUser")) {
-      const obj = JSON.parse(sessionStorage.getItem("authUser"));
-
-      if (!isEmpty(user)) {
-        obj.data.first_name = user.first_name;
-        sessionStorage.removeItem("authUser");
-        sessionStorage.setItem("authUser", JSON.stringify(obj));
-      }
-
-      setUserName(obj.data.first_name);
-      setemail(obj.data.email);
-      setidx(obj.data._id || "1");
-
-      setTimeout(() => {
-        dispatch(resetProfileFlag());
-      }, 3000);
+      setAuthUser(JSON.parse(sessionStorage.getItem("authUser")));
     }
-  }, [dispatch, user]);
-
-
-
-  const validation = useFormik({
-    // enableReinitialize : use this flag when initial values needs to be changed
-    enableReinitialize: true,
-
-    initialValues: {
-      first_name: userName || 'Admin',
-      idx: idx || '',
-    },
-    validationSchema: Yup.object({
-      first_name: Yup.string().required("Please Enter Your UserName"),
-    }),
-    onSubmit: (values) => {
-      dispatch(editProfile(values));
-    }
-  });
+  }, []);
 
   document.title = "Profile | Velzon - React Admin & Dashboard Template";
   return (
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          <Row>
-            <Col lg="12">
-              {error && error ? <Alert color="danger">{error}</Alert> : null}
-              {success ? <Alert color="success">Username Updated To {userName}</Alert> : null}
-
+          <Row className="justify-content-center">
+            <Col>
               <Card>
                 <CardBody>
-                  <div className="d-flex">
-                    <div className="mx-3">
-                      <img
-                        src={avatar}
-                        alt=""
-                        className="avatar-md rounded-circle img-thumbnail"
-                      />
-                    </div>
-                    <div className="flex-grow-1 align-self-center">
-                      <div className="text-muted">
-                        <h5>{userName || "Admin"}</h5>
-                        <p className="mb-1">Email Id : {email}</p>
-                        <p className="mb-0">Id No : #{idx}</p>
+                  <Row className="mb-2">
+                    <Col md={12}>
+                      <h5 className="mb-4">Profil Detayları</h5>
+                      <div className="d-flex align-items-center mb-4">
+                        {authUser.profilePictureUrl ? (
+                          <img
+                            src={authUser.profilePictureUrl}
+                            alt="Profile"
+                            className="rounded-circle avatar-lg img-thumbnail me-3"
+                            style={{
+                              width: 80,
+                              height: 80,
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          <div
+                            className="rounded-circle avatar-lg img-thumbnail me-3 d-flex align-items-center justify-content-center"
+                            style={{
+                              width: 80,
+                              height: 80,
+                              background: "#e0e0e0",
+                              color: "#888",
+                              fontSize: 32,
+                              fontWeight: 600,
+                            }}
+                          >
+                            <i className="ri-user-line"></i>
+                          </div>
+                        )}
+                        <div>
+                          <h4 className="mb-1">{authUser.username || ""} </h4>
+                          <div className="text-muted">{authUser.email}</div>
+                        </div>
                       </div>
-                    </div>
+                    </Col>
+                    <Col md={3}>
+                      <div
+                        className="mb-3 d-flex align-items-center paket-card bg-light "
+                        style={{
+                          cursor: "pointer",
+                          borderRadius: "8px",
+                          padding: "12px 16px",
+
+                          transition: "box-shadow 0.2s",
+                          boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                        }}
+                        onClick={() => {
+                          /* popup açma fonksiyonu */
+                        }}
+                      >
+                        <div className="avatar-xs d-block flex-shrink-0 me-3">
+                          <span className="avatar-title rounded-circle fs-16 bg-primary-subtle text-primary">
+                            <i className="ri-global-fill"></i>
+                          </span>
+                        </div>
+                        <div>
+                          <div className="fw-bold fs-15 text-primary">
+                            Başlangıç Paketi
+                          </div>
+                          <div className="text-muted small">12 Ay - Aktif</div>
+                        </div>
+                      </div>
+                    </Col>
+                  </Row>
+                  <div>
+                    <Row className="border-top pt-3">
+                      <Col md="4" className="mb-3">
+                        <div className="fw-semibold">İsim Soyisim</div>
+                        <div className="text-muted">
+                          {authUser.firstName || authUser.first_name || ""}{" "}
+                          {authUser.lastName || authUser.last_name || ""}
+                        </div>
+                      </Col>
+                      <Col md="4" className="mb-3">
+                        <div className="fw-semibold">Email</div>
+                        <div className="text-muted">{authUser.email}</div>
+                      </Col>
+                      <Col md="4" className="mb-3">
+                        <div className="fw-semibold">Rol</div>
+                        <div className="text-muted">{authUser.role}</div>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col md="4" className="mb-3">
+                        <div className="fw-semibold">Telefon Numarası</div>
+                        <div className="text-muted">
+                          {authUser.phone || "+905305454999"}
+                        </div>
+                      </Col>
+                      <Col md="4" className="mb-3">
+                        <div className="fw-semibold">Oluşturulma Tarihi</div>
+                        <div className="text-muted">
+                          {formatDate(authUser.createdOn)}
+                        </div>
+                      </Col>
+                      <Col md="4" className="mb-3">
+                        <div className="fw-semibold">
+                          Son Güncellenme Tarihi
+                        </div>
+                        <div className="text-muted">
+                          {formatDate(authUser.modifiedOn)}
+                        </div>
+                      </Col>
+                    </Row>
                   </div>
                 </CardBody>
               </Card>
             </Col>
           </Row>
-
-          <h4 className="card-title mb-4">Change User Name</h4>
-
-          <Card>
-            <CardBody>
-              <Form
-                className="form-horizontal"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  validation.handleSubmit();
-                  return false;
-                }}
-              >
-                <div className="form-group">
-                  <Label className="form-label">User Name</Label>
-                  <Input
-                    name="first_name"
-                    // value={name}
-                    className="form-control"
-                    placeholder="Enter User Name"
-                    type="text"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.first_name || ""}
-                    invalid={
-                      validation.touched.first_name && validation.errors.first_name ? true : false
-                    }
-                  />
-                  {validation.touched.first_name && validation.errors.first_name ? (
-                    <FormFeedback type="invalid">{validation.errors.first_name}</FormFeedback>
-                  ) : null}
-                  <Input name="idx" value={idx} type="hidden" />
-                </div>
-                <div className="text-center mt-4">
-                  <Button type="submit" color="danger">
-                    Update User Name
-                  </Button>
-                </div>
-              </Form>
-            </CardBody>
-          </Card>
         </Container>
       </div>
     </React.Fragment>
