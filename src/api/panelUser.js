@@ -22,3 +22,27 @@ export const getPanelUser = (userId) => {
     throw error;
   }
 };
+export const updatePanelUser = (userId, data) => {
+  try {
+    const response = apiClient.put(`/panelUsers/${userId}`, data);
+    return response;
+  } catch (error) {
+    console.error(`Error updating panel user with id ${userId}:`, error);
+    throw error;
+  }
+};
+export const changePanelUserPassword = (userId, oldPassword, newPassword) => {
+  try {
+    const response = apiClient.put(`/panelUsers/${userId}/changePassword`, {
+      oldPassword,
+      newPassword,
+    });
+    return response;
+  } catch (error) {
+    console.error(
+      `Error changing password for panel user with id ${userId}:`,
+      error
+    );
+    throw error;
+  }
+};

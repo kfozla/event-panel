@@ -83,7 +83,7 @@ apiClient.interceptors.response.use(
         processQueue(err, null);
         // Refresh de başarısızsa, oturumu temizle ve login'e yönlendir
         sessionStorage.clear();
-        window.location.href = "/login";
+
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

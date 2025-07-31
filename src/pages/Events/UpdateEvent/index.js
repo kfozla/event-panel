@@ -30,12 +30,14 @@ import { set } from "lodash";
 const UpdateEvent = () => {
   const { id } = useParams();
   const [eventData, setEventData] = useState({});
+  const [name, setName] = useState("");
   const [editorData, setEditorData] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [domainName, setDomainName] = useState("");
   const [selectedTheme, setSelectedTheme] = useState("light"); // Varsayılan tema "light"
+  const [panelUserId, setPanelUserId] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,12 +45,17 @@ const UpdateEvent = () => {
       try {
         const data = await getEventById(id);
         setEventData(data);
+        setName(data.name || "");
         setEditorData(data.description || "");
         setStartDate(data.startTime ? new Date(data.startTime) : null);
         setEndDate(data.endTime ? new Date(data.endTime) : null);
         setThumbnailUrl(data.thumbnailUrl || "");
-        setSelectedTheme(data.theme || "light"); // Varsayılan tema "light"
+        setSelectedTheme(data.theme || "light");
         setDomainName(data.domainName || "");
+        const authUser = JSON.parse(
+          sessionStorage.getItem("authUser") || "null"
+        );
+        setPanelUserId(authUser?.id || "");
       } catch (err) {
         console.error("Etkinlik verisi alınamadı:", err);
       }
@@ -77,19 +84,19 @@ const UpdateEvent = () => {
     }
     // eventData'yı güncelle
     const payload = {
-      ...eventData,
+      name: name,
       description: editorData,
       // toISOString() yerine formatLocalDateTime kullanın
       startTime: formatLocalDateTime(startDate),
       endTime: formatLocalDateTime(endDate),
       thumbnailUrl: thumbnailUrl,
       domainName: domainName || "",
-      theme: selectedTheme || "light", // Varsayılan tema "light"
+      theme: selectedTheme || "light",
+      panelUserId: panelUserId || "",
     };
     try {
       await updateEvent(id, payload);
-      navigate("/apps-events-all"); // Yönlendirmek istediğiniz sayfanın path'i
-      // Başarılı güncelleme sonrası istersen yönlendirme veya mesaj ekleyebilirsin
+      navigate("/apps-events-all");
     } catch (err) {
       // Hata yönetimi
       console.error(err);
@@ -152,10 +159,8 @@ const UpdateEvent = () => {
                         className="form-control"
                         id="project-title-input"
                         placeholder="Etkinlik Başlığı Girin"
-                        value={eventData.name}
-                        onChange={(e) =>
-                          setEventData({ ...eventData, name: e.target.value })
-                        }
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                       />
                     </div>
 

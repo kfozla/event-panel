@@ -34,19 +34,11 @@ const AddEvent = () => {
     { value: "20% off", label: "20% off" },
     { value: "4 star", label: "4 star" },
   ];
-  const [eventData, setEventData] = useState({
-    name: "",
-    description: "",
-    startTime: "",
-    endTime: "",
-    thumbnailUrl: "",
-    domainName: "",
-
-    mediaList: [],
-  });
 
   const navigate = useNavigate();
 
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   // CKEditor için ayrı state
   const [editorData, setEditorData] = useState("");
 
@@ -58,6 +50,7 @@ const AddEvent = () => {
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [selectedTheme, setSelectedTheme] = useState("");
   const [panelUserId, setPanelUserId] = useState("");
+  const [domainName, setDomainName] = useState("");
 
   useEffect(() => {
     const authUser = JSON.parse(sessionStorage.getItem("authUser") || "null");
@@ -67,65 +60,29 @@ const AddEvent = () => {
   // Form submit fonksiyonu
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!eventData.name || !editorData || !startDate || !endDate) {
+    if (!name || !editorData || !startDate || !endDate || !domainName) {
       toast.error("Lütfen tüm alanları doldurun.");
       return;
     }
     // eventData'yı güncelle
     const payload = {
-      ...eventData,
+      name: name,
       description: editorData,
       startTime: startDate ? startDate[0] : "",
       endTime: endDate ? endDate[0] : "",
       thumbnailUrl: thumbnailUrl,
       theme: selectedTheme,
-      userList: null,
-      domainName: eventData.domainName || "",
+      domainName: domainName,
       panelUserId: panelUserId,
     };
     console.log("Payload:", payload);
     try {
       await createEvent(payload);
-      navigate("/apps-events-all"); // Yönlendirmek istediğiniz sayfanın path'i
-      // Başarılı ekleme sonrası istersen yönlendirme veya mesaj ekleyebilirsin
+      navigate("/apps-events-all");
     } catch (err) {
-      // Hata yönetimi
       console.error(err);
     }
   };
-
-  const [selectedMulti, setselectedMulti] = useState(null);
-
-  function handleMulti(selectedMulti) {
-    setselectedMulti(selectedMulti);
-  }
-
-  //Dropzone file upload
-  const [selectedFiles, setselectedFiles] = useState([]);
-  const [files, setFiles] = useState([]);
-
-  function handleAcceptedFiles(files) {
-    files.map((file) =>
-      Object.assign(file, {
-        preview: URL.createObjectURL(file),
-        formattedSize: formatBytes(file.size),
-      })
-    );
-    setselectedFiles(files);
-  }
-
-  /**
-   * Formats the size
-   */
-  function formatBytes(bytes, decimals = 2) {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
-  }
   document.title = "Create Project | Velzon - React Admin & Dashboard Template";
   return (
     <React.Fragment>
@@ -150,10 +107,8 @@ const AddEvent = () => {
                         className="form-control"
                         id="project-title-input"
                         placeholder="Etkinlik Başlığı Girin"
-                        value={eventData.name}
-                        onChange={(e) =>
-                          setEventData({ ...eventData, name: e.target.value })
-                        }
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                       />
                     </div>
 
@@ -278,13 +233,8 @@ const AddEvent = () => {
                           className="form-control"
                           id="domain-name"
                           placeholder="Domain Adı Girin"
-                          value={eventData.domainName || ""}
-                          onChange={(e) =>
-                            setEventData({
-                              ...eventData,
-                              domainName: e.target.value,
-                            })
-                          }
+                          value={domainName || ""}
+                          onChange={(e) => setDomainName(e.target.value)}
                         />
                       </Col>
                     </Row>

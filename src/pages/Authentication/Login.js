@@ -44,38 +44,56 @@ const Login = () => {
       setLoading(true);
       setError("");
       try {
-        const res = await loginUser({
-          username: values.username,
-          password: values.password,
-        });
+        console.log("test1");
 
-        const userObj = await getLoggedInUser(
-          res.user?.username || values.username
-        );
-        console.log("User Object:", userObj);
-        const authUser = {
-          ...userObj,
+        let res;
+        try {
+          res = await loginUser({
+            username: values.username,
+            password: values.password,
+          });
+        } catch (err) {
+          console.error("Login Error:", err);
+          setError("Giriş sırasında bir hata oluştu.");
+          setLoading(false);
+          return;
+        }
+        console.log("test2");
 
-          username: userObj.username,
-          first_name: userObj.firstName || "",
-          last_name: userObj.lastName || "",
-          token: res.accessToken,
-          role: userObj.role || "user",
-          refreshToken: res.refreshToken,
-          email: userObj.email || "",
-        };
-        sessionStorage.setItem("authUser", JSON.stringify(authUser));
-        sessionStorage.setItem("token", res.accessToken);
-        sessionStorage.setItem("refreshToken", res.refreshToken);
+        console.log("Login Response:", res);
+        if (res == null || !res || res.status == 401) {
+          console.log("test3");
 
-        apiClient.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${res.accessToken}`;
-        // Başarılı girişte yönlendir
-        history("/dashboard");
+          setError("Giriş başarısız, lütfen tekrar deneyin.");
+          setLoading(false);
+          return;
+        } else {
+          console.log("Login Response:", res);
+          const userObj = await getLoggedInUser(values.username);
+          const authUser = {
+            ...userObj,
+
+            username: userObj.username,
+            first_name: userObj.firstName || "",
+            last_name: userObj.lastName || "",
+            token: res.accessToken,
+            role: userObj.role || "user",
+            refreshToken: res.refreshToken,
+            email: userObj.email || "",
+          };
+          sessionStorage.setItem("authUser", JSON.stringify(authUser));
+          sessionStorage.setItem("token", res.accessToken);
+          sessionStorage.setItem("refreshToken", res.refreshToken);
+
+          apiClient.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${res.accessToken}`;
+          // Başarılı girişte yönlendir
+          history("/dashboard");
+        }
       } catch (err) {
         setError(
-          err.response?.data?.message || "Giriş sırasında bir hata oluştu."
+          err.response?.data?.message || "Giriş sırasında bir hata oluştu. "
         );
       } finally {
         setLoading(false);
@@ -116,14 +134,7 @@ const Login = () => {
                     </div>
                     {error && <Alert color="danger"> {error} </Alert>}{" "}
                     <div className="p-2 mt-4">
-                      <Form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          validation.handleSubmit();
-                          return false;
-                        }}
-                        action="#"
-                      >
+                      <Form onSubmit={validation.handleSubmit} action="#">
                         <div className="mb-3">
                           <Label htmlFor="username" className="form-label">
                             Kullanıcı Adı

@@ -40,7 +40,12 @@ const UserProfile = () => {
                       <div className="d-flex align-items-center mb-4">
                         {authUser.profilePictureUrl ? (
                           <img
-                            src={URL + authUser.profilePictureUrl}
+                            src={
+                              URL +
+                              authUser.profilePictureUrl +
+                              "?t=" +
+                              new Date().getTime()
+                            }
                             alt="Profile"
                             className="rounded-circle avatar-lg img-thumbnail me-3"
                             style={{
@@ -122,7 +127,7 @@ const UserProfile = () => {
                       <Col md="4" className="mb-3">
                         <div className="fw-semibold">Telefon Numarası</div>
                         <div className="text-muted">
-                          {authUser.phone || "+905305454999"}
+                          {authUser.phoneNumber || ""}
                         </div>
                       </Col>
                       <Col md="4" className="mb-3">

@@ -47,7 +47,12 @@ const ProfileDropdown = () => {
             {authUser && authUser.profilePictureUrl ? (
               <img
                 className="rounded-circle header-profile-user"
-                src={URL + authUser.profilePictureUrl}
+                src={
+                  URL +
+                  authUser.profilePictureUrl +
+                  "?t=" +
+                  new Date().getTime()
+                }
                 alt="Header Avatar"
               />
             ) : (

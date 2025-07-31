@@ -25,8 +25,13 @@ import avatar1 from "../../../../assets/images/users/avatar-1.jpg";
 import {
   uploadPanelUserProfilePicture,
   getPanelUser,
+  updatePanelUser,
+  changePanelUserPassword,
 } from "../../../../api/panelUser";
 import { useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import { set } from "lodash";
+import { logoutUser } from "../../../../api/authentication";
 
 const Settings = () => {
   const URL = "http://localhost:5176/";
@@ -51,6 +56,10 @@ const Settings = () => {
   }, [authUser && authUser.id]);
 
   const [activeTab, setActiveTab] = useState("1");
+  // Şifre göster/gizle için state
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const tabChange = (tab) => {
     if (activeTab !== tab) setActiveTab(tab);
   };
@@ -61,22 +70,111 @@ const Settings = () => {
   const handleUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    console.log("userId:", authUser.id);
-    console.log("file:", file);
     try {
       await uploadPanelUserProfilePicture(authUser.id, file);
-      // Başarılı ise burada profil fotoğrafını güncelleyebilirsin
-      // window.location.reload(); // veya state ile güncelle
+      // Upload sonrası kullanıcıyı tekrar çek
+      const updatedUser = await getPanelUser(authUser.id);
+      setAuthUser((prev) => ({
+        ...prev,
+        profilePictureUrl: updatedUser.data?.profilePictureUrl || null,
+      }));
+      // SessionStorage'da da güncelle
+      const stored = JSON.parse(sessionStorage.getItem("authUser") || "{}");
+      sessionStorage.setItem(
+        "authUser",
+        JSON.stringify({
+          ...stored,
+          profilePictureUrl: updatedUser.data?.profilePictureUrl || null,
+        })
+      );
+      toast.success("Profil fotoğrafı yüklendi");
     } catch (err) {
       // Hata yönetimi
       console.error("Upload error:", err);
-      alert("Fotoğraf yüklenirken hata oluştu");
+      toast.error("Profil fotoğrafı yüklenirken hata oluştu");
     }
   };
-  console.log("authUser:", authUser);
+  const handleUpdate = async () => {
+    let user;
+    try {
+      user = (await getPanelUser(authUser.id)).data;
+    } catch (error) {
+      toast.error("Kullanıcı bilgileri alınırken hata oluştu");
+      return;
+    }
+
+    const username = document.getElementById("usernameInput").value;
+    const firstName = document.getElementById("firstnameInput").value;
+    const lastName = document.getElementById("lastnameInput").value;
+    const phoneNumber = document.getElementById("phonenumberInput").value;
+    const email = document.getElementById("emailInput").value;
+
+    if (!username || !firstName || !lastName || !phoneNumber || !email) {
+      toast.error("Lütfen tüm alanları doldurun");
+      return;
+    }
+    user.username = username;
+    user.firstName = firstName;
+    user.lastName = lastName;
+    user.phoneNumber = phoneNumber;
+    user.email = email;
+
+    try {
+      await updatePanelUser(authUser.id, user);
+      toast.success("Profil güncellendi");
+      // Profil güncellendikten sonra kullanıcıyı tekrar çek
+      const updatedUser = await getPanelUser(authUser.id);
+      setAuthUser((prev) => ({
+        ...prev,
+        ...updatedUser.data,
+      }));
+      // SessionStorage'da da güncelle
+      const stored = JSON.parse(sessionStorage.getItem("authUser") || "{}");
+      sessionStorage.setItem(
+        "authUser",
+        JSON.stringify({
+          ...stored,
+          ...updatedUser.data,
+        })
+      );
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Profil güncellenirken hata oluştu");
+    }
+  };
+  const handlePasswordChange = async () => {
+    const oldPassword = document.getElementById("oldpasswordInput").value;
+    const newPassword = document.getElementById("newpasswordInput").value;
+    const confirmPassword = document.getElementById(
+      "confirmpasswordInput"
+    ).value;
+    if (newPassword !== confirmPassword) {
+      toast.error("Yeni şifreler eşleşmiyor");
+      return;
+    }
+    try {
+      await changePanelUserPassword(authUser.id, oldPassword, newPassword);
+      toast.success("Şifre başarıyla değiştirildi. Tekrar Giriş Yapın");
+      const updatedUser = await getPanelUser(authUser.id);
+      setAuthUser(updatedUser.data || {});
+      sessionStorage.setItem(
+        "authUser",
+        JSON.stringify(updatedUser.data || {})
+      );
+      // 2 saniye sonra logout
+      setTimeout(() => {
+        logoutUser();
+        window.location.href = "/login";
+      }, 1000);
+    } catch (error) {
+      console.error("Error changing password:", error);
+      toast.error("Şifre değiştirilemedi, lütfen bilgileri kontrol edin");
+    }
+  };
 
   return (
     <React.Fragment>
+      <ToastContainer closeButton={false} />
       <div className="page-content mt-4">
         <Container fluid>
           <Row>
@@ -87,7 +185,12 @@ const Settings = () => {
                     <div className="profile-user position-relative d-inline-block mx-auto  mb-4">
                       {authUser && authUser.profilePictureUrl ? (
                         <img
-                          src={URL + authUser.profilePictureUrl}
+                          src={
+                            URL +
+                            authUser.profilePictureUrl +
+                            "?t=" +
+                            new Date().getTime()
+                          }
                           className="rounded-circle avatar-xl img-thumbnail user-profile-image"
                           alt="user-profile"
                         />
@@ -310,7 +413,11 @@ const Settings = () => {
                               >
                                 İptal
                               </button>
-                              <button type="button" className="btn btn-primary">
+                              <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={() => handleUpdate()}
+                              >
                                 Güncelle
                               </button>
                             </div>
@@ -330,12 +437,33 @@ const Settings = () => {
                               >
                                 Eski Şifre*
                               </Label>
-                              <Input
-                                type="password"
-                                className="form-control"
-                                id="oldpasswordInput"
-                                placeholder="Mevcut şifreyi girin"
-                              />
+                              <div className="input-group">
+                                <Input
+                                  type={showOldPassword ? "text" : "password"}
+                                  className="form-control"
+                                  id="oldpasswordInput"
+                                  placeholder="Mevcut şifreyi girin"
+                                  required
+                                />
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-secondary"
+                                  tabIndex={-1}
+                                  onClick={() => setShowOldPassword((v) => !v)}
+                                  style={{
+                                    borderTopLeftRadius: 0,
+                                    borderBottomLeftRadius: 0,
+                                  }}
+                                >
+                                  <i
+                                    className={
+                                      showOldPassword
+                                        ? "ri-eye-off-line"
+                                        : "ri-eye-line"
+                                    }
+                                  ></i>
+                                </button>
+                              </div>
                             </div>
                           </Col>
 
@@ -347,12 +475,33 @@ const Settings = () => {
                               >
                                 Yeni Şifre*
                               </Label>
-                              <Input
-                                type="password"
-                                className="form-control"
-                                id="newpasswordInput"
-                                placeholder="Yeni şifreyi girin"
-                              />
+                              <div className="input-group">
+                                <Input
+                                  type={showNewPassword ? "text" : "password"}
+                                  className="form-control"
+                                  id="newpasswordInput"
+                                  placeholder="Yeni şifreyi girin"
+                                  required
+                                />
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-secondary"
+                                  tabIndex={-1}
+                                  onClick={() => setShowNewPassword((v) => !v)}
+                                  style={{
+                                    borderTopLeftRadius: 0,
+                                    borderBottomLeftRadius: 0,
+                                  }}
+                                >
+                                  <i
+                                    className={
+                                      showNewPassword
+                                        ? "ri-eye-off-line"
+                                        : "ri-eye-line"
+                                    }
+                                  ></i>
+                                </button>
+                              </div>
                             </div>
                           </Col>
 
@@ -364,12 +513,37 @@ const Settings = () => {
                               >
                                 Şifreyi Onayla*
                               </Label>
-                              <Input
-                                type="password"
-                                className="form-control"
-                                id="confirmpasswordInput"
-                                placeholder="Şifreyi onaylayın"
-                              />
+                              <div className="input-group">
+                                <Input
+                                  type={
+                                    showConfirmPassword ? "text" : "password"
+                                  }
+                                  className="form-control"
+                                  id="confirmpasswordInput"
+                                  placeholder="Şifreyi onaylayın"
+                                  required
+                                />
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-secondary"
+                                  tabIndex={-1}
+                                  onClick={() =>
+                                    setShowConfirmPassword((v) => !v)
+                                  }
+                                  style={{
+                                    borderTopLeftRadius: 0,
+                                    borderBottomLeftRadius: 0,
+                                  }}
+                                >
+                                  <i
+                                    className={
+                                      showConfirmPassword
+                                        ? "ri-eye-off-line"
+                                        : "ri-eye-line"
+                                    }
+                                  ></i>
+                                </button>
+                              </div>
                             </div>
                           </Col>
 
@@ -386,7 +560,11 @@ const Settings = () => {
 
                           <Col lg={12}>
                             <div className="text-end">
-                              <button type="button" className="btn btn-primary">
+                              <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={() => handlePasswordChange()}
+                              >
                                 Şifre Değiştir
                               </button>
                             </div>
