@@ -1,39 +1,35 @@
 import apiClient from "./apiClient";
 
-export const uploadPanelUserProfilePicture = (userId, file) => {
+export const uploadPanelUserProfilePicture = (file) => {
   const formData = new FormData();
   formData.append("file", file); // Backend IFormFile file bekliyor
-  return apiClient.post(
-    `/panelUsers/${userId}/uploadProfilePicture`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
+  return apiClient.post(`/panelUsers/uploadProfilePicture`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 };
-export const getPanelUser = (userId) => {
+export const getPanelUser = () => {
   try {
-    const response = apiClient.get(`/panelUsers/${userId}`);
+    const response = apiClient.get(`/panelUsers`);
     return response;
   } catch (error) {
-    console.error(`Error fetching panel user with id ${userId}:`, error);
+    console.error(`Error fetching panel user with id :`, error);
     throw error;
   }
 };
-export const updatePanelUser = (userId, data) => {
+export const updatePanelUser = (data) => {
   try {
-    const response = apiClient.put(`/panelUsers/${userId}`, data);
+    const response = apiClient.put(`/panelUsers`, data);
     return response;
   } catch (error) {
-    console.error(`Error updating panel user with id ${userId}:`, error);
+    console.error(`Error updating panel user:`, error);
     throw error;
   }
 };
-export const changePanelUserPassword = (userId, oldPassword, newPassword) => {
+export const changePanelUserPassword = (oldPassword, newPassword) => {
   try {
-    const response = apiClient.put(`/panelUsers/${userId}/changePassword`, {
+    const response = apiClient.put(`/panelUsers/changePassword`, {
       oldPassword,
       newPassword,
     });
@@ -41,6 +37,63 @@ export const changePanelUserPassword = (userId, oldPassword, newPassword) => {
   } catch (error) {
     console.error(
       `Error changing password for panel user with id ${userId}:`,
+      error
+    );
+    throw error;
+  }
+};
+export const getPanelUserEvents = () => {
+  try {
+    const response = apiClient.get("/panelUsers/events");
+    return response;
+  } catch (error) {
+    console.error("Error fetching panel user events:", error);
+    throw error;
+  }
+};
+export const addPanelUser = (userData) => {
+  try {
+    const response = apiClient.post("/panelUsers", userData);
+    return response.data;
+  } catch (error) {
+    console.error("Error adding panel user:", error);
+    throw error;
+  }
+};
+export const deletePanelUser = (userId) => {
+  try {
+    const response = apiClient.delete(`/panelUsers/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting panel user with id ${userId}:`, error);
+    throw error;
+  }
+};
+export const getPanelUserAll = async () => {
+  try {
+    const response = await apiClient.get("/panelUsers/all");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching panel user list:", error);
+    throw error;
+  }
+};
+export const getPanelUserById = async (userId) => {
+  try {
+    const response = await apiClient.get(`/panelUsers/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching panel user with id ${userId}:`, error);
+    throw error;
+  }
+};
+export const getPanelUserEventsById = async (userId) => {
+  try {
+    const response = await apiClient.get(`/panelUsers/${userId}/events`);
+    return response.data;
+  } catch (error) {
+    console.error(
+      `Error fetching events for panel user with id ${userId}:`,
       error
     );
     throw error;

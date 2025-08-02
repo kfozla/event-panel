@@ -23,8 +23,6 @@ import {
   Form,
 } from "reactstrap";
 
-import { getEventList, deleteEventList } from "../../../slices/thunks";
-
 import {
   OrdersId,
   Project,
@@ -47,25 +45,6 @@ import { createSelector } from "reselect";
 import { hover } from "@testing-library/user-event/dist/cjs/convenience/hover.js";
 
 const AllTasks = () => {
-  const dispatch = useDispatch();
-
-  const selectDashboardData = createSelector(
-    (state) => state.Events,
-    (Events) => Events.eventLists
-  );
-  // Inside your component
-  const eventLists = useSelector(selectDashboardData);
-
-  const [event, setEvent] = useState(null);
-
-  useEffect(() => {
-    dispatch(getEventList());
-  }, [dispatch]);
-
-  useEffect(() => {
-    setEvent(eventLists);
-  }, [eventLists]);
-
   const [task, setTask] = useState([]);
   const [TaskList, setTaskList] = useState([]);
 

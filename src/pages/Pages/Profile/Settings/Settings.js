@@ -32,6 +32,8 @@ import { useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import { set } from "lodash";
 import { logoutUser } from "../../../../api/authentication";
+import * as Yup from "yup";
+import { useFormik } from "formik";
 
 const Settings = () => {
   const URL = "http://localhost:5176/";
@@ -43,13 +45,69 @@ const Settings = () => {
     }
   }, []);
 
+  // Formik setup
+  const formik = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      username: authUser.username || "",
+      firstName: authUser.firstName || "",
+      lastName: authUser.lastName || "",
+      phoneNumber: authUser.phoneNumber || "",
+      email: authUser.email || "",
+    },
+    validationSchema: Yup.object({
+      username: Yup.string()
+        .min(3, "Kullanıcı adı en az 3 karakter olmalı")
+        .required("Kullanıcı adı zorunlu"),
+      firstName: Yup.string()
+        .min(2, "İsim en az 2 karakter olmalı")
+        .required("İsim zorunlu"),
+      lastName: Yup.string()
+        .min(2, "Soyisim en az 2 karakter olmalı")
+        .required("Soyisim zorunlu"),
+      phoneNumber: Yup.string()
+        .matches(
+          /^\d{10,15}$/,
+          "Telefon numarası 10-15 haneli ve sadece rakam olmalı"
+        )
+        .required("Telefon numarası zorunlu"),
+      email: Yup.string()
+        .email("Geçerli bir e-posta adresi girin")
+        .required("Email zorunlu"),
+    }),
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        await updatePanelUser(values);
+        toast.success("Profil güncellendi");
+        // Profil güncellendikten sonra kullanıcıyı tekrar çek
+        const updatedUser = await getPanelUser();
+        setAuthUser((prev) => ({
+          ...prev,
+          ...updatedUser.data,
+        }));
+        // SessionStorage'da da güncelle
+        const stored = JSON.parse(sessionStorage.getItem("authUser") || "{}");
+        sessionStorage.setItem(
+          "authUser",
+          JSON.stringify({
+            ...stored,
+            ...updatedUser.data,
+          })
+        );
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        toast.error("Profil güncellenirken hata oluştu");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+
   useEffect(() => {
     if (authUser && authUser.id) {
       const fetchUser = async () => {
-        const user = await getPanelUser(authUser.id);
+        const user = await getPanelUser();
         setAuthUser(user.data || {});
-        console.log(authUser.id);
-        console.log("Fetched user:", user);
       };
       fetchUser();
     }
@@ -71,9 +129,9 @@ const Settings = () => {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      await uploadPanelUserProfilePicture(authUser.id, file);
+      await uploadPanelUserProfilePicture(file);
       // Upload sonrası kullanıcıyı tekrar çek
-      const updatedUser = await getPanelUser(authUser.id);
+      const updatedUser = await getPanelUser();
       setAuthUser((prev) => ({
         ...prev,
         profilePictureUrl: updatedUser.data?.profilePictureUrl || null,
@@ -95,14 +153,6 @@ const Settings = () => {
     }
   };
   const handleUpdate = async () => {
-    let user;
-    try {
-      user = (await getPanelUser(authUser.id)).data;
-    } catch (error) {
-      toast.error("Kullanıcı bilgileri alınırken hata oluştu");
-      return;
-    }
-
     const username = document.getElementById("usernameInput").value;
     const firstName = document.getElementById("firstnameInput").value;
     const lastName = document.getElementById("lastnameInput").value;
@@ -113,17 +163,18 @@ const Settings = () => {
       toast.error("Lütfen tüm alanları doldurun");
       return;
     }
-    user.username = username;
-    user.firstName = firstName;
-    user.lastName = lastName;
-    user.phoneNumber = phoneNumber;
-    user.email = email;
-
+    const user = {
+      username: username,
+      firstName: firstName,
+      lastName: lastName,
+      phoneNumber: phoneNumber,
+      email: email,
+    };
     try {
-      await updatePanelUser(authUser.id, user);
+      await updatePanelUser(user);
       toast.success("Profil güncellendi");
       // Profil güncellendikten sonra kullanıcıyı tekrar çek
-      const updatedUser = await getPanelUser(authUser.id);
+      const updatedUser = await getPanelUser();
       setAuthUser((prev) => ({
         ...prev,
         ...updatedUser.data,
@@ -148,14 +199,24 @@ const Settings = () => {
     const confirmPassword = document.getElementById(
       "confirmpasswordInput"
     ).value;
+
+    // Sadece 8 karakter kontrolü
+    if (!newPassword || newPassword.length < 8) {
+      toast.error("Şifre en az 8 karakter olmalı");
+      return;
+    }
+    if (oldPassword === newPassword) {
+      toast.error("Yeni şifre eski şifreyle aynı olamaz");
+      return;
+    }
     if (newPassword !== confirmPassword) {
       toast.error("Yeni şifreler eşleşmiyor");
       return;
     }
     try {
-      await changePanelUserPassword(authUser.id, oldPassword, newPassword);
+      await changePanelUserPassword(oldPassword, newPassword);
       toast.success("Şifre başarıyla değiştirildi. Tekrar Giriş Yapın");
-      const updatedUser = await getPanelUser(authUser.id);
+      const updatedUser = await getPanelUser();
       setAuthUser(updatedUser.data || {});
       sessionStorage.setItem(
         "authUser",
@@ -309,14 +370,14 @@ const Settings = () => {
                 <CardBody className="p-4">
                   <TabContent activeTab={activeTab}>
                     <TabPane tabId="1">
-                      <Form>
+                      <Form onSubmit={formik.handleSubmit}>
                         <Row>
                           <Col lg={12}>
                             <Row className="g-2">
                               <Col md={4}>
                                 <div className="mb-2">
                                   <Label
-                                    htmlFor="usernameInput"
+                                    htmlFor="username"
                                     className="form-label"
                                   >
                                     Kullanıcı Adı
@@ -324,16 +385,29 @@ const Settings = () => {
                                   <Input
                                     type="text"
                                     className="form-control"
-                                    id="usernameInput"
+                                    id="username"
+                                    name="username"
                                     placeholder="Kullanıcı adınızı girin"
-                                    defaultValue={authUser.username || ""}
+                                    value={formik.values.username}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    invalid={
+                                      formik.touched.username &&
+                                      !!formik.errors.username
+                                    }
                                   />
+                                  {formik.touched.username &&
+                                    formik.errors.username && (
+                                      <div className="text-danger small">
+                                        {formik.errors.username}
+                                      </div>
+                                    )}
                                 </div>
                               </Col>
                               <Col md={4}>
                                 <div className="mb-2">
                                   <Label
-                                    htmlFor="firstnameInput"
+                                    htmlFor="firstName"
                                     className="form-label"
                                   >
                                     İsim
@@ -341,16 +415,29 @@ const Settings = () => {
                                   <Input
                                     type="text"
                                     className="form-control"
-                                    id="firstnameInput"
+                                    id="firstName"
+                                    name="firstName"
                                     placeholder="İsminizi Girin"
-                                    defaultValue={authUser.firstName || ""}
+                                    value={formik.values.firstName}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    invalid={
+                                      formik.touched.firstName &&
+                                      !!formik.errors.firstName
+                                    }
                                   />
+                                  {formik.touched.firstName &&
+                                    formik.errors.firstName && (
+                                      <div className="text-danger small">
+                                        {formik.errors.firstName}
+                                      </div>
+                                    )}
                                 </div>
                               </Col>
                               <Col md={4}>
                                 <div className="mb-3">
                                   <Label
-                                    htmlFor="lastnameInput"
+                                    htmlFor="lastName"
                                     className="form-label"
                                   >
                                     Soyisim
@@ -358,10 +445,23 @@ const Settings = () => {
                                   <Input
                                     type="text"
                                     className="form-control"
-                                    id="lastnameInput"
+                                    id="lastName"
+                                    name="lastName"
                                     placeholder="Soyisminizi Girin"
-                                    defaultValue={authUser.lastName || ""}
+                                    value={formik.values.lastName}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    invalid={
+                                      formik.touched.lastName &&
+                                      !!formik.errors.lastName
+                                    }
                                   />
+                                  {formik.touched.lastName &&
+                                    formik.errors.lastName && (
+                                      <div className="text-danger small">
+                                        {formik.errors.lastName}
+                                      </div>
+                                    )}
                                 </div>
                               </Col>
                             </Row>
@@ -371,35 +471,65 @@ const Settings = () => {
                               <Col md={6}>
                                 <div className="mb-3">
                                   <Label
-                                    htmlFor="phonenumberInput"
+                                    htmlFor="phoneNumber"
                                     className="form-label"
                                   >
                                     Telefon Numarası
                                   </Label>
                                   <Input
-                                    type="text"
+                                    type="tel"
                                     className="form-control"
-                                    id="phonenumberInput"
+                                    id="phoneNumber"
+                                    name="phoneNumber"
                                     placeholder="Telefon numaranızı girin"
-                                    defaultValue={authUser.phoneNumber || ""}
+                                    value={formik.values.phoneNumber}
+                                    onChange={(e) => {
+                                      // Sadece rakam girilsin
+                                      const val = e.target.value.replace(
+                                        /[^0-9]/g,
+                                        ""
+                                      );
+                                      formik.setFieldValue("phoneNumber", val);
+                                    }}
+                                    onBlur={formik.handleBlur}
+                                    invalid={
+                                      formik.touched.phoneNumber &&
+                                      !!formik.errors.phoneNumber
+                                    }
                                   />
+                                  {formik.touched.phoneNumber &&
+                                    formik.errors.phoneNumber && (
+                                      <div className="text-danger small">
+                                        {formik.errors.phoneNumber}
+                                      </div>
+                                    )}
                                 </div>
                               </Col>
                               <Col md={6}>
                                 <div className="mb-3">
-                                  <Label
-                                    htmlFor="emailInput"
-                                    className="form-label"
-                                  >
+                                  <Label htmlFor="email" className="form-label">
                                     Email
                                   </Label>
                                   <Input
                                     type="email"
                                     className="form-control"
-                                    id="emailInput"
+                                    id="email"
+                                    name="email"
                                     placeholder="Email adresinizi girin"
-                                    defaultValue={authUser.email || ""}
+                                    value={formik.values.email}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    invalid={
+                                      formik.touched.email &&
+                                      !!formik.errors.email
+                                    }
                                   />
+                                  {formik.touched.email &&
+                                    formik.errors.email && (
+                                      <div className="text-danger small">
+                                        {formik.errors.email}
+                                      </div>
+                                    )}
                                 </div>
                               </Col>
                             </Row>
@@ -414,11 +544,13 @@ const Settings = () => {
                                 İptal
                               </button>
                               <button
-                                type="button"
+                                type="submit"
                                 className="btn btn-primary"
-                                onClick={() => handleUpdate()}
+                                disabled={formik.isSubmitting}
                               >
-                                Güncelle
+                                {formik.isSubmitting
+                                  ? "Kaydediliyor..."
+                                  : "Güncelle"}
                               </button>
                             </div>
                           </Col>

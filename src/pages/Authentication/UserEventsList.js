@@ -1,74 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { getEventList, deleteEventList } from "../../../slices/thunks";
-import { getPanelUserEvents } from "../../../api/panelUser";
-import { getEvents } from "../../../api/events";
-import { deleteEvent } from "../../../api/events";
-import { createSelector } from "reselect";
-import { useSelector, useDispatch } from "react-redux";
-import TableContainer from "../../../Components/Common/TableContainer";
-import DeleteModal from "../../../Components/Common/DeleteModal";
-import { ToastContainer } from "react-toastify";
+import {
+  getPanelUserAll,
+  deletePanelUser,
+  getPanelUserById,
+  getPanelUserEventsById,
+} from "../../api/panelUser";
+
+import TableContainer from "../../Components/Common/TableContainer";
+import DeleteModal from "../../Components/Common/DeleteModal";
+import { toast, ToastContainer } from "react-toastify";
 import { Link } from "react-router-dom";
+import { Container } from "reactstrap";
+import BreadCrumb from "../../Components/Common/BreadCrumb";
+import { useParams } from "react-router-dom";
+import { set } from "lodash";
 
-function EventTable() {
-  const dispatch = useDispatch();
+function UserEventsList() {
+  const { id } = useParams();
+  const [user, setUser] = useState(null);
+  const [event, setEvent] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const URL = "http://localhost:5176/";
 
-  const selectEventData = createSelector(
-    (state) => state.Events,
-    (Events) => Events.eventLists
-  );
-
-  const [authUser, setAuthUser] = useState(null);
   useEffect(() => {
-    const user = JSON.parse(sessionStorage.getItem("authUser"));
-    if (user) {
-      setAuthUser(user);
-    }
-  }, []);
-  const [Events, setEvents] = useState([]);
-  useEffect(() => {
-    if (!authUser) return;
-    const fetchEvents = async () => {
+    const fetchUser = async () => {
       try {
-        let response;
-        console.log("authUser:", authUser);
-        if (authUser.role == "Admin") {
-          response = await getEvents();
-        } else {
-          response = await getPanelUserEvents();
-        }
-        if (response && response.data) {
-          setEvents(response.data);
-        }
+        const response = await getPanelUserById(id);
+        console.log("Fetched user:", response);
+        const eventsResponse = await getPanelUserEventsById(id);
+        console.log("Fetched user events:", eventsResponse);
+
+        setUser(response);
+        setEvents(eventsResponse);
       } catch (error) {
-        console.error("Error fetching panel user events:", error);
+        console.error("Error fetching panel user :", error);
       }
     };
-    fetchEvents();
-  }, [authUser, dispatch]);
-
-  const [event, setEvent] = useState(null);
-  const [deleteModal, setDeleteModal] = useState(false);
+    fetchUser();
+  }, []);
 
   const onClickData = (event) => {
     setEvent(event);
     setDeleteModal(true);
   };
-  // Silme işlemi
 
-  const handleDeleteEventList = async () => {
+  const handleDeleteUser = async () => {
     if (event) {
       try {
-        await deleteEvent(event.id);
-        setEvents((prevEvents) => prevEvents.filter((e) => e.id !== event.id));
-      } catch (error) {
-        console.error("Error deleting event:", error);
+        await deletePanelUser(event.id);
+        setEvents((prev) => prev.filter((e) => e.id !== event.id));
+        toast.success("Etkinlik başarıyla silindi.");
+      } catch (e) {
+        toast.error("Etkinlik silinirken bir hata oluştu.");
       }
       setDeleteModal(false);
     }
   };
 
-  // Tablo kolonları
   const columns = [
     {
       id: "thumbnail",
@@ -185,28 +174,6 @@ function EventTable() {
       enableColumnFilter: false,
     },
 
-    // ...existing code...
-    ...(authUser && authUser.role === "Admin"
-      ? [
-          {
-            id: "panelUser",
-            header: "Ekleyen",
-            accessorKey: "panelUser",
-            cell: (cell) => {
-              const panelUser = cell.getValue();
-              return (
-                <Link
-                  to={`/apps-user-profile/${panelUser.id}`}
-                  className="text-decoration-none text-success fw-semibold"
-                >
-                  {panelUser && panelUser.username ? panelUser.username : ""}
-                </Link>
-              );
-            },
-            enableColumnFilter: false,
-          },
-        ]
-      : []),
     {
       id: "actions",
       header: "İşlemler",
@@ -245,36 +212,44 @@ function EventTable() {
       enableColumnFilter: false,
     },
   ];
-
-  // TableContainer'ın satırlarını logla
-  // import { useReactTable } from "@tanstack/react-table"; // yukarıda zaten TableContainer'da var
-  // TableContainer'ın içini loglamak için TableContainer'a bir prop ekleyebilirsin
-
+  console.log("user:", user);
   return (
-    <div>
-      <ToastContainer closeButton={false} />
-      <DeleteModal
-        show={deleteModal}
-        onDeleteClick={() => handleDeleteEventList()}
-        onCloseClick={() => setDeleteModal(false)}
-        headerText={"Etkinliği Sil"}
-        content={`"${
-          event ? event.name : ""
-        }" etkinliğini silmek istediğinize emin misiniz ?`}
-      />
-      <TableContainer
-        columns={columns}
-        data={Events || []}
-        customPageSize={10}
-        className="custom-header-css"
-        divClass="table-responsive table-card mb-3"
-        tableClass="align-middle table-nowrap mb-0"
-        theadClass="table-light table-nowrap"
-        thClass="table-light text-muted"
-        isGlobalFilter={false}
-      />
-    </div>
+    <React.Fragment>
+      <div className="page-content">
+        <BreadCrumb
+          title={
+            user && user.username
+              ? user.username + " kişisinin etkinlikleri"
+              : "Etkinlikler"
+          }
+          pageTitle="Kullanıcı listesi"
+        />
+        <Container fluid>
+          <ToastContainer closeButton={false} />
+          <DeleteModal
+            show={deleteModal}
+            onDeleteClick={handleDeleteUser}
+            onCloseClick={() => setDeleteModal(false)}
+            headerText={"Etkinliği Sil"}
+            content={`"${
+              event ? event.title : ""
+            }" etkinliğini silmek istediğinize emin misiniz ?`}
+          />
+          <TableContainer
+            columns={columns}
+            data={events || []}
+            customPageSize={10}
+            className="custom-header-css"
+            divClass="table-responsive table-card mb-3"
+            tableClass="align-middle table-nowrap mb-0"
+            theadClass="table-light table-nowrap"
+            thClass="table-light text-muted"
+            isGlobalFilter={false}
+          />
+        </Container>
+      </div>
+    </React.Fragment>
   );
 }
 
-export default EventTable;
+export default UserEventsList;

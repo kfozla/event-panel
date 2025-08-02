@@ -8,6 +8,11 @@ import AddEvent from "../pages/Events/AddEvent/index";
 import EventOverview from "../pages/Events/EventOverview/index";
 import UserMediaList from "../pages/Events/EventOverview/UserMediaList";
 
+//Authentication
+import AddUser from "../pages/Authentication/AddUser";
+import ListUsers from "../pages/Authentication/ListUsers";
+import UserProfileById from "../pages/Authentication/user-profile-byId";
+import UserEventsList from "../pages/Authentication/UserEventsList";
 //Dashboard
 import DashboardAnalytics from "../pages/DashboardAnalytics";
 import DashboardCrm from "../pages/DashboardCrm";
@@ -269,7 +274,15 @@ const authProtectedRoutes = [
   { path: "/apps-events-overview/:id", component: <EventOverview /> },
   { path: "/apps-events-add", component: <AddEvent /> },
   { path: "/apps-events-update/:id", component: <UpdateEvent /> },
-  { path: "/apps-events-user-medialist/:id", component: <UserMediaList /> },
+  {
+    path: "/apps-events/:eventId/user-medialist/:userId",
+    component: <UserMediaList />,
+  },
+  //Authentication
+  { path: "/apps-add-user", component: <AddUser /> },
+  { path: "/apps-list-users", component: <ListUsers /> },
+  { path: "/apps-user-profile/:id", component: <UserProfileById /> },
+  { path: "/apps-user-events/:id", component: <UserEventsList /> },
 
   { path: "/apps-calendar", component: <Calendar /> },
   { path: "/apps-calendar-month-grid", component: <MonthGrid /> },

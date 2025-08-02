@@ -23,6 +23,7 @@ import {
   getEventMediaList,
   getEventUserList,
 } from "../../../api/events";
+import { getPanelUserById } from "../../../api/panelUser";
 import { useEffect } from "react";
 import TeamTab from "./TeamTab";
 import DeleteModal from "../../../Components/Common/DeleteModal";
@@ -40,6 +41,9 @@ const Section = ({ eventId }) => {
     }
   };
   const [eventData, setEventData] = useState(null);
+
+  const [panelUser, setPanelUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   // Delete Task
   const [deleteModal, setDeleteModal] = useState(false);
   const [event, setEvent] = useState(null);
@@ -66,11 +70,19 @@ const Section = ({ eventId }) => {
   };
 
   useEffect(() => {
+    // Kullanıcı admin mi kontrolü
+    const authUser = JSON.parse(sessionStorage.getItem("authUser") || "{}");
+    setIsAdmin(authUser.role === "Admin");
+
     const fetchEvent = async () => {
       try {
         const eventData = await getEventById(eventId);
         eventData.mediaList = await getEventMediaList(eventId);
         eventData.userList = await getEventUserList(eventId);
+        if (authUser.role === "Admin") {
+          const panelUserData = await getPanelUserById(eventData.panelUserId);
+          setPanelUser(panelUserData);
+        }
         setEventData(eventData);
       } catch (error) {
         console.error("Error fetching event data:", error);
@@ -86,6 +98,10 @@ const Section = ({ eventId }) => {
         show={deleteModal}
         onDeleteClick={() => handleDeleteEventList()}
         onCloseClick={() => setDeleteModal(false)}
+        headerText={"Etkinliği Sil"}
+        content={`"${
+          event ? event.name : ""
+        }" etkinliğini silmek istediğinize emin misiniz ?`}
       />
       <Row>
         <Col lg={12}>
@@ -114,6 +130,18 @@ const Section = ({ eventId }) => {
                           <h4 className="fw-bold">
                             {eventData ? eventData.name : ""}
                           </h4>
+                          {isAdmin && panelUser && (
+                            <div>
+                              <span className="fw-semibold text-danger   ">
+                                <Link
+                                  to={`/apps-user-profile/${panelUser.id}`}
+                                  className="text-danger text-decoration-underline cursor-pointer"
+                                >
+                                  {panelUser.username}
+                                </Link>
+                              </span>
+                            </div>
+                          )}
                           <div className="hstack gap-3 flex-wrap">
                             <div>
                               Eklenme Tarihi :{" "}
@@ -255,7 +283,10 @@ const Section = ({ eventId }) => {
               />
             </TabPane>
             <TabPane tabId="2">
-              <DocumentsTab mediaList={eventData ? eventData.mediaList : []} />
+              <DocumentsTab
+                mediaList={eventData ? eventData.mediaList : []}
+                userList={eventData ? eventData.userList : []}
+              />
             </TabPane>
             <TabPane tabId="3">
               <TeamTab

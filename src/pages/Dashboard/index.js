@@ -11,6 +11,7 @@ import UpcomingSchedules from "./UpcomingSchedules";
 import Widgets from "./Widgets";
 import DashboardCalendar from "./DashboardCalendar";
 import { getEvents } from "../../api/events";
+import { getPanelUserEvents } from "../../api/panelUser";
 import { set } from "lodash";
 
 const DashboardProject = () => {
@@ -33,7 +34,7 @@ const DashboardProject = () => {
       } else if (start < now.setHours(0, 0, 0, 0)) {
         className = "bg-danger-subtle"; // geçmiş: kırmızı
       }
-      return {
+      const calendarEvent = {
         id: event.id,
         title: event.name,
         start,
@@ -41,6 +42,10 @@ const DashboardProject = () => {
         allDay: false,
         className,
       };
+      if (event.panelUser && event.panelUser.username) {
+        calendarEvent.panelUserUsername = event.panelUser.username;
+      }
+      return calendarEvent;
     });
   };
 
@@ -67,22 +72,35 @@ const DashboardProject = () => {
       year: Number(year),
     }));
   };
-
+  const [authUser, setAuthUser] = React.useState(null);
+  React.useEffect(() => {
+    const user = JSON.parse(sessionStorage.getItem("authUser"));
+    if (user) {
+      setAuthUser(user);
+    }
+  }, []);
   // Fetch events data ve chartData'yı güncelle
   React.useEffect(() => {
+    if (!authUser) return;
     const fetchEvents = async () => {
       try {
-        const response = await getEvents();
-        setEvents(response);
-        setChartData(getChartDataFromEvents(response));
-        setCalendarData(getCalendarDataFromEvents(response));
-        console.log("Fetched events:", response);
+        let response;
+        if (authUser.role === "Admin") {
+          response = await getEvents();
+        } else {
+          response = await getPanelUserEvents();
+        }
+        console.log("Fetched events:", response.data);
+        setEvents(response.data);
+        setChartData(getChartDataFromEvents(response.data));
+        setCalendarData(getCalendarDataFromEvents(response.data));
+        console.log("Fetched events:", response.data);
       } catch (error) {
         console.error("Error fetching events:", error);
       }
     };
     fetchEvents();
-  }, []);
+  }, [authUser]);
   console.log("Chart Data:", chartData);
   return (
     <React.Fragment>

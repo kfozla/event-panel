@@ -11,26 +11,27 @@ import {
   Table,
   UncontrolledDropdown,
 } from "reactstrap";
-import { getAllUsers, getUserMediaCount } from "../../../api/user";
+import { getUserMediaCount } from "../../../api/user";
 import { deleteMedia } from "../../../api/media";
 import DeleteModal from "../../../Components/Common/DeleteModal";
 import { ToastContainer } from "react-toastify";
 import { useEffect, useState } from "react";
 
-const DocumentsTab = ({ mediaList }) => {
+const DocumentsTab = ({ mediaList, userList }) => {
   const [usernames, setUsernames] = useState([]);
   const [media, setMedia] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
   const [mediaListState, setMediaListState] = useState(mediaList || []);
   const URL = "http://localhost:5176/";
   useEffect(() => {
+    console.log("userList", userList);
     async function fetchUsernames() {
-      const users = await getAllUsers();
+      const users = userList;
       const userMediaCounts = await Promise.all(
-        users.data.map((user) => getUserMediaCount(user.id))
+        users.map((user) => getUserMediaCount(user.id))
       );
       const userMap = {};
-      users.data.forEach((user, index) => {
+      users.forEach((user, index) => {
         userMap[user.id] = {
           username: user.username,
           mediaCount: userMediaCounts[index].data.count,
@@ -78,6 +79,8 @@ const DocumentsTab = ({ mediaList }) => {
         show={deleteModal}
         onDeleteClick={() => handleDeleteEventList()}
         onCloseClick={() => setDeleteModal(false)}
+        headerText="Medya Sil"
+        content="Bu içeriği silmek istediğinize emin misiniz?"
       />
       <Card>
         <CardBody>

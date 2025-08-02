@@ -116,6 +116,10 @@ const TeamTab = ({ eventID }) => {
         show={deleteModal}
         onDeleteClick={() => handleDeleteEventList()}
         onCloseClick={() => setDeleteModal(false)}
+        headerText={"Silmek istediğinize emin misiniz?"}
+        content={`"${
+          user ? user.username : ""
+        }" kullanıcısını ve yüklemerini silmek üzeresiniz`}
       />
       <Row className="g-4 mb-3">
         <div className="col-sm">
@@ -162,7 +166,7 @@ const TeamTab = ({ eventID }) => {
                 <Col lg={2} className="col">
                   <div className="text-end">
                     <Link
-                      to={`/apps-events-user-medialist/${user.id}`}
+                      to={`/apps-events/${eventID}/user-medialist/${user.id}`}
                       className="btn btn-light view-btn"
                     >
                       Yükledikleri

@@ -12,13 +12,28 @@ import { useNavigate } from "react-router-dom";
 
 function DashboardCalendar({ calendarData }) {
   const navigate = useNavigate();
-
+  console.log("calendarData:", calendarData);
   // Event tıklanınca overview sayfasına yönlendir
   const handleEventClick = (info) => {
     const eventId = info.event.id;
     navigate(`/apps-events-overview/${eventId}`);
   };
-
+  const renderEventContent = (eventInfo) => {
+    const username = eventInfo.event.extendedProps.panelUserUsername;
+    if (!username) {
+      return (
+        <div>
+          <strong>{eventInfo.event.title}</strong>
+        </div>
+      );
+    }
+    return (
+      <div>
+        <strong>{eventInfo.event.title}</strong>
+        {username && <p className="text-black">{username}</p>}
+      </div>
+    );
+  };
   return (
     <Card className="card-h-100">
       <CardBody>
@@ -41,6 +56,7 @@ function DashboardCalendar({ calendarData }) {
           height={680}
           locales={[trLocale]}
           locale="tr"
+          eventContent={renderEventContent}
         />
       </CardBody>
     </Card>

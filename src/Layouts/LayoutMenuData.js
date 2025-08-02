@@ -6,6 +6,12 @@ import FeatherIcon from "feather-icons-react";
 
 const Navdata = () => {
   const history = useNavigate();
+  const [authUser, setAuthUser] = useState({});
+  useEffect(() => {
+    if (sessionStorage.getItem("authUser")) {
+      setAuthUser(JSON.parse(sessionStorage.getItem("authUser")));
+    }
+  }, []);
   //state data
   const [isDashboard, setIsDashboard] = useState(false);
   const [isApps, setIsApps] = useState(false);
@@ -228,168 +234,51 @@ const Navdata = () => {
         },
       ],
     },
-    {
-      id: "authentication",
-      label: "Yetkilendirme",
-      icon: <FeatherIcon icon="users" className="icon-dual" />,
-      link: "/#",
-      click: function (e) {
-        e.preventDefault();
-        setIsAuth(!isAuth);
-        setIscurrentState("Auth");
-        updateIconSidebar(e);
-      },
-      stateVariables: isAuth,
-      subItems: [
-        {
-          id: "signIn",
-          label: "Sign In",
-          link: "/#",
-          isChildItem: true,
-          click: function (e) {
-            e.preventDefault();
-            setIsSignIn(!isSignIn);
+
+    // YETKİLENDİRME MENÜSÜ SADECE ADMIN İÇİN
+    ...(authUser && authUser.role === "Admin"
+      ? [
+          {
+            id: "authentication",
+            label: "Yetkilendirme",
+            icon: <FeatherIcon icon="users" className="icon-dual" />,
+            link: "/#",
+            click: function (e) {
+              e.preventDefault();
+              setIsAuth(!isAuth);
+              setIscurrentState("Auth");
+              updateIconSidebar(e);
+            },
+            stateVariables: isAuth,
+            subItems: [
+              {
+                id: "signIn",
+                label: "Kullanıcı Ekle",
+                link: "/apps-add-user",
+                click: function (e) {
+                  e.preventDefault();
+                  setIsSignIn(!isSignIn);
+                  history("/apps-add-user");
+                },
+                parentId: "authentication",
+                stateVariables: isSignIn,
+              },
+              {
+                id: "signUp",
+                label: "Kullanıcı Listesi",
+                link: "/apps-list-users",
+                click: function (e) {
+                  e.preventDefault();
+                  setIsSignUp(!isSignUp);
+                  history("/apps-list-users");
+                },
+                parentId: "authentication",
+                stateVariables: isSignUp,
+              },
+            ],
           },
-          parentId: "authentication",
-          stateVariables: isSignIn,
-          childItems: [
-            { id: 1, label: "Basic", link: "/auth-signin-basic" },
-            { id: 2, label: "Cover", link: "/auth-signin-cover" },
-          ],
-        },
-        {
-          id: "signUp",
-          label: "Sign Up",
-          link: "/#",
-          isChildItem: true,
-          click: function (e) {
-            e.preventDefault();
-            setIsSignUp(!isSignUp);
-          },
-          parentId: "authentication",
-          stateVariables: isSignUp,
-          childItems: [
-            { id: 1, label: "Basic", link: "/auth-signup-basic" },
-            { id: 2, label: "Cover", link: "/auth-signup-cover" },
-          ],
-        },
-        {
-          id: "passwordReset",
-          label: "Password Reset",
-          link: "/#",
-          isChildItem: true,
-          click: function (e) {
-            e.preventDefault();
-            setIsPasswordReset(!isPasswordReset);
-          },
-          parentId: "authentication",
-          stateVariables: isPasswordReset,
-          childItems: [
-            { id: 1, label: "Basic", link: "/auth-pass-reset-basic" },
-            { id: 2, label: "Cover", link: "/auth-pass-reset-cover" },
-          ],
-        },
-        {
-          id: "passwordCreate",
-          label: "Password Create",
-          link: "/#",
-          isChildItem: true,
-          click: function (e) {
-            e.preventDefault();
-            setIsPasswordCreate(!isPasswordCreate);
-          },
-          parentId: "authentication",
-          stateVariables: isPasswordCreate,
-          childItems: [
-            { id: 1, label: "Basic", link: "/auth-pass-change-basic" },
-            { id: 2, label: "Cover", link: "/auth-pass-change-cover" },
-          ],
-        },
-        {
-          id: "lockScreen",
-          label: "Lock Screen",
-          link: "/#",
-          isChildItem: true,
-          click: function (e) {
-            e.preventDefault();
-            setIsLockScreen(!isLockScreen);
-          },
-          parentId: "authentication",
-          stateVariables: isLockScreen,
-          childItems: [
-            { id: 1, label: "Basic", link: "/auth-lockscreen-basic" },
-            { id: 2, label: "Cover", link: "/auth-lockscreen-cover" },
-          ],
-        },
-        {
-          id: "logout",
-          label: "Logout",
-          link: "/#",
-          isChildItem: true,
-          click: function (e) {
-            e.preventDefault();
-            setIsLogout(!isLogout);
-          },
-          parentId: "authentication",
-          stateVariables: isLogout,
-          childItems: [
-            { id: 1, label: "Basic", link: "/auth-logout-basic" },
-            { id: 2, label: "Cover", link: "/auth-logout-cover" },
-          ],
-        },
-        {
-          id: "successMessage",
-          label: "Success Message",
-          link: "/#",
-          isChildItem: true,
-          click: function (e) {
-            e.preventDefault();
-            setIsSuccessMessage(!isSuccessMessage);
-          },
-          parentId: "authentication",
-          stateVariables: isSuccessMessage,
-          childItems: [
-            { id: 1, label: "Basic", link: "/auth-success-msg-basic" },
-            { id: 2, label: "Cover", link: "/auth-success-msg-cover" },
-          ],
-        },
-        {
-          id: "twoStepVerification",
-          label: "Two Step Verification",
-          link: "/#",
-          isChildItem: true,
-          click: function (e) {
-            e.preventDefault();
-            setIsVerification(!isVerification);
-          },
-          parentId: "authentication",
-          stateVariables: isVerification,
-          childItems: [
-            { id: 1, label: "Basic", link: "/auth-twostep-basic" },
-            { id: 2, label: "Cover", link: "/auth-twostep-cover" },
-          ],
-        },
-        {
-          id: "errors",
-          label: "Errors",
-          link: "/#",
-          isChildItem: true,
-          click: function (e) {
-            e.preventDefault();
-            setIsError(!isError);
-          },
-          parentId: "authentication",
-          stateVariables: isError,
-          childItems: [
-            { id: 1, label: "404 Basic", link: "/auth-404-basic" },
-            { id: 2, label: "404 Cover", link: "/auth-404-cover" },
-            { id: 3, label: "404 Alt", link: "/auth-404-alt" },
-            { id: 4, label: "500", link: "/auth-500" },
-            { id: 5, label: "Offline Page", link: "/auth-offline" },
-          ],
-        },
-      ],
-    },
+        ]
+      : []),
 
     {
       /*Forms 
@@ -1140,4 +1029,123 @@ subItems: [
           badgeName: "New",
         },
       ],*/
+}
+
+{
+  /* Password Reset
+        {
+          id: "passwordReset",
+          label: "Password Reset",
+          link: "/#",
+          isChildItem: true,
+          click: function (e) {
+            e.preventDefault();
+            setIsPasswordReset(!isPasswordReset);
+          },
+          parentId: "authentication",
+          stateVariables: isPasswordReset,
+          childItems: [
+            { id: 1, label: "Basic", link: "/auth-pass-reset-basic" },
+            { id: 2, label: "Cover", link: "/auth-pass-reset-cover" },
+          ],
+        },
+        {
+          id: "passwordCreate",
+          label: "Password Create",
+          link: "/#",
+          isChildItem: true,
+          click: function (e) {
+            e.preventDefault();
+            setIsPasswordCreate(!isPasswordCreate);
+          },
+          parentId: "authentication",
+          stateVariables: isPasswordCreate,
+          childItems: [
+            { id: 1, label: "Basic", link: "/auth-pass-change-basic" },
+            { id: 2, label: "Cover", link: "/auth-pass-change-cover" },
+          ],
+        },
+        {
+          id: "lockScreen",
+          label: "Lock Screen",
+          link: "/#",
+          isChildItem: true,
+          click: function (e) {
+            e.preventDefault();
+            setIsLockScreen(!isLockScreen);
+          },
+          parentId: "authentication",
+          stateVariables: isLockScreen,
+          childItems: [
+            { id: 1, label: "Basic", link: "/auth-lockscreen-basic" },
+            { id: 2, label: "Cover", link: "/auth-lockscreen-cover" },
+          ],
+        },
+        {
+          id: "logout",
+          label: "Logout",
+          link: "/#",
+          isChildItem: true,
+          click: function (e) {
+            e.preventDefault();
+            setIsLogout(!isLogout);
+          },
+          parentId: "authentication",
+          stateVariables: isLogout,
+          childItems: [
+            { id: 1, label: "Basic", link: "/auth-logout-basic" },
+            { id: 2, label: "Cover", link: "/auth-logout-cover" },
+          ],
+        },
+        {
+          id: "successMessage",
+          label: "Success Message",
+          link: "/#",
+          isChildItem: true,
+          click: function (e) {
+            e.preventDefault();
+            setIsSuccessMessage(!isSuccessMessage);
+          },
+          parentId: "authentication",
+          stateVariables: isSuccessMessage,
+          childItems: [
+            { id: 1, label: "Basic", link: "/auth-success-msg-basic" },
+            { id: 2, label: "Cover", link: "/auth-success-msg-cover" },
+          ],
+        },
+        {
+          id: "twoStepVerification",
+          label: "Two Step Verification",
+          link: "/#",
+          isChildItem: true,
+          click: function (e) {
+            e.preventDefault();
+            setIsVerification(!isVerification);
+          },
+          parentId: "authentication",
+          stateVariables: isVerification,
+          childItems: [
+            { id: 1, label: "Basic", link: "/auth-twostep-basic" },
+            { id: 2, label: "Cover", link: "/auth-twostep-cover" },
+          ],
+        },
+        {
+          id: "errors",
+          label: "Errors",
+          link: "/#",
+          isChildItem: true,
+          click: function (e) {
+            e.preventDefault();
+            setIsError(!isError);
+          },
+          parentId: "authentication",
+          stateVariables: isError,
+          childItems: [
+            { id: 1, label: "404 Basic", link: "/auth-404-basic" },
+            { id: 2, label: "404 Cover", link: "/auth-404-cover" },
+            { id: 3, label: "404 Alt", link: "/auth-404-alt" },
+            { id: 4, label: "500", link: "/auth-500" },
+            { id: 5, label: "Offline Page", link: "/auth-offline" },
+          ],
+        }, */
 }

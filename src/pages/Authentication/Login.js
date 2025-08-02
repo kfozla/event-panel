@@ -58,9 +58,11 @@ const Login = () => {
           setLoading(false);
           return;
         }
+
         console.log("test2");
 
         console.log("Login Response:", res);
+
         if (res == null || !res || res.status == 401) {
           console.log("test3");
 
@@ -68,8 +70,14 @@ const Login = () => {
           setLoading(false);
           return;
         } else {
+          sessionStorage.setItem("token", res.accessToken);
+          sessionStorage.setItem("refreshToken", res.refreshToken);
+
+          apiClient.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${res.accessToken}`;
           console.log("Login Response:", res);
-          const userObj = await getLoggedInUser(values.username);
+          const userObj = await getLoggedInUser();
           const authUser = {
             ...userObj,
 
@@ -82,12 +90,7 @@ const Login = () => {
             email: userObj.email || "",
           };
           sessionStorage.setItem("authUser", JSON.stringify(authUser));
-          sessionStorage.setItem("token", res.accessToken);
-          sessionStorage.setItem("refreshToken", res.refreshToken);
 
-          apiClient.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${res.accessToken}`;
           // Başarılı girişte yönlendir
           history("/dashboard");
         }

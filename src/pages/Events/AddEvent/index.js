@@ -49,12 +49,11 @@ const AddEvent = () => {
   // Kapak resmi için url
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [selectedTheme, setSelectedTheme] = useState("");
-  const [panelUserId, setPanelUserId] = useState("");
+
   const [domainName, setDomainName] = useState("");
 
   useEffect(() => {
     const authUser = JSON.parse(sessionStorage.getItem("authUser") || "null");
-    setPanelUserId(authUser?.id || "");
   }, []);
 
   // Form submit fonksiyonu
@@ -73,7 +72,6 @@ const AddEvent = () => {
       thumbnailUrl: thumbnailUrl,
       theme: selectedTheme,
       domainName: domainName,
-      panelUserId: panelUserId,
     };
     console.log("Payload:", payload);
     try {

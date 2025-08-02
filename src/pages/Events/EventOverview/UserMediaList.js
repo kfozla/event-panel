@@ -18,15 +18,14 @@ import DeleteModal from "../../../Components/Common/DeleteModal";
 import { ToastContainer } from "react-toastify";
 import { CardHeader } from "reactstrap";
 import SimpleBar from "simplebar-react";
+import { getUserMediaList } from "../../../api/user";
 import { getEventUserList } from "../../../api/events";
 
 const UserMediaList = () => {
-  const { id: userId } = useParams();
+  const { eventId, userId } = useParams();
   const [username, setUsername] = React.useState("");
   const [mediaList, setMediaList] = React.useState([]);
   const URL = "http://localhost:5176/";
-
-  const [eventId, setEventId] = useState();
 
   const [media, setMedia] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
@@ -35,34 +34,24 @@ const UserMediaList = () => {
   // eventId güncellendiğinde eventUserList'i fetch etme işlemini userId ile birlikte ana useEffect'e taşıyoruz
   useEffect(() => {
     const fetchData = async () => {
-      if (userId) {
-        try {
-          const userRes = await import("../../../api/user").then((mod) =>
-            mod.getUserById(userId)
-          );
-          setEventId(userRes.data?.eventId);
-          setUsername(userRes.data?.username || "Unknown");
-          const mediaRes = await import("../../../api/user").then((mod) =>
-            mod.getUserMediaList(userId)
-          );
-          setMediaList(mediaRes.data || []);
-          // eventId geldiyse burada user listesi de çekilsin
-          console.log("UserRes:", userRes.data.eventId);
-          if (userRes.data?.eventId) {
-            const userList = await getEventUserList(userRes.data.eventId);
-            setEventUserList(userList || []);
-          } else {
-            setEventUserList([]);
-          }
-        } catch (err) {
-          setUsername("Unknown");
-          setMediaList([]);
-          setEventUserList([]);
-        }
+      if (!eventId || !userId) return;
+
+      try {
+        const userList = await getEventUserList(eventId);
+        const medialist = await getUserMediaList(userId);
+
+        setEventUserList(userList);
+        console.log("Event User List:", userList);
+        setMediaList(medialist.data || []);
+      } catch (err) {
+        setUsername("Unknown");
+        setMediaList([]);
+        setEventUserList([]);
       }
     };
+
     fetchData();
-  }, [userId]);
+  }, [userId, eventId]);
 
   const onClickData = (media) => {
     setMedia(media);
@@ -101,27 +90,6 @@ const UserMediaList = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (userId) {
-        try {
-          const userRes = await import("../../../api/user").then((mod) =>
-            mod.getUserById(userId)
-          );
-          setEventId(userRes.data?.eventId);
-          setUsername(userRes.data?.username || "Unknown");
-          const mediaRes = await import("../../../api/user").then((mod) =>
-            mod.getUserMediaList(userId)
-          );
-          setMediaList(mediaRes.data || []);
-        } catch (err) {
-          setUsername("Unknown");
-          setMediaList([]);
-        }
-      }
-    };
-    fetchData();
-  }, [userId]);
   const truncateText = (text, maxLength = 40) => {
     if (!text) return "";
     return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
@@ -134,6 +102,8 @@ const UserMediaList = () => {
         show={deleteModal}
         onDeleteClick={() => handleDeleteEventList()}
         onCloseClick={() => setDeleteModal(false)}
+        headerText="Medya Sil"
+        content="Bu içeriği silmek istediğinize emin misiniz?"
       />
       <div className="page-content">
         <Container fluid>
@@ -294,7 +264,7 @@ const UserMediaList = () => {
                                   <div className="flex-shrink-0">
                                     <div className="d-flex align-items-center gap-1">
                                       <Link
-                                        to={`/apps-events-user-medialist/${user.id}`}
+                                        to={`/apps-events/${eventId}/user-medialist/${user.id}`}
                                         className="btn btn-light view-btn"
                                       >
                                         Yükledikleri

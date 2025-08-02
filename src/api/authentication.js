@@ -18,9 +18,9 @@ export const loginUser = async (credentials) => {
     throw error;
   }
 };
-export const getLoggedInUser = async (username) => {
+export const getLoggedInUser = async () => {
   try {
-    const response = await apiClient.get(`/auth/user/${username}`);
+    const response = await apiClient.get(`/auth/me`);
     return response.data;
   } catch (error) {
     console.error("Error fetching logged-in user:", error);

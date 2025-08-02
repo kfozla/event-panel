@@ -3,7 +3,7 @@ import apiClient from "./apiClient";
 export const getEvents = async () => {
   try {
     const response = await apiClient.get("/events");
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Error fetching events:", error);
     throw error;

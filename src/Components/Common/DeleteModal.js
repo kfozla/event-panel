@@ -2,7 +2,13 @@ import PropTypes from "prop-types";
 import React from "react";
 import { Modal, ModalBody } from "reactstrap";
 
-const DeleteModal = ({ show, onDeleteClick, onCloseClick }) => {
+const DeleteModal = ({
+  show,
+  onDeleteClick,
+  onCloseClick,
+  headerText,
+  content,
+}) => {
   return (
     <Modal isOpen={show} toggle={onCloseClick} centered={true}>
       <ModalBody className="py-3 px-5">
@@ -14,9 +20,11 @@ const DeleteModal = ({ show, onDeleteClick, onCloseClick }) => {
             style={{ width: "100px", height: "100px" }}
           ></lord-icon>
           <div className="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
-            <h4>Are you sure ?</h4>
+            <h4>{headerText ? headerText || "" : "Are you sure ?"}</h4>
             <p className="text-muted mx-4 mb-0">
-              Are you sure you want to remove this record ?
+              {content
+                ? content
+                : "Are you sure you want to remove this record ?"}
             </p>
           </div>
         </div>
@@ -27,7 +35,7 @@ const DeleteModal = ({ show, onDeleteClick, onCloseClick }) => {
             data-bs-dismiss="modal"
             onClick={onCloseClick}
           >
-            Close
+            Kapat
           </button>
           <button
             type="button"
@@ -35,7 +43,7 @@ const DeleteModal = ({ show, onDeleteClick, onCloseClick }) => {
             id="delete-record"
             onClick={onDeleteClick}
           >
-            Yes, Delete It!
+            Evet, Sil!
           </button>
         </div>
       </ModalBody>
