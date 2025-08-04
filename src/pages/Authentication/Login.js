@@ -88,6 +88,10 @@ const Login = () => {
             role: userObj.role || "user",
             refreshToken: res.refreshToken,
             email: userObj.email || "",
+            profilePictureUrl: userObj.profilePictureUrl || null,
+            servicePackageId: userObj.servicePackageId || null,
+            servicePackageExpiration: userObj.servicePackageExpiration || null,
+            servicePackageAdded: userObj.servicePackageAdded || null,
           };
           sessionStorage.setItem("authUser", JSON.stringify(authUser));
 

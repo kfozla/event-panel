@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import {
   Row,
   Col,
@@ -19,23 +19,18 @@ import { useFormik } from "formik";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// action
-import { apiError, resetRegisterFlag } from "../../slices/thunks";
-
-//redux
-import { useSelector, useDispatch } from "react-redux";
-
 import { Link, useNavigate } from "react-router-dom";
 
 //import images
 import logoLight from "../../assets/images/bocek.svg";
 import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
-import { createSelector } from "reselect";
+
 import { registerUser } from "../../api/authentication";
 
 const Register = () => {
   const history = useNavigate();
-  const dispatch = useDispatch();
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   const validation = useFormik({
     // enableReinitialize : use this flag when initial values needs to be changed
@@ -60,7 +55,7 @@ const Register = () => {
         .required("Lütfen şifrenizi onaylayın"),
     }),
 
-    onSubmit: async (values) => {
+    onSubmit: async (values, { setSubmitting }) => {
       const payload = {
         username: values.username,
         firstName: values.name,
@@ -68,49 +63,26 @@ const Register = () => {
         email: values.email,
         password: values.password,
       };
-      await registerUser(payload)
-        .then((res) => {
-          // Tokenları localStorage'a kaydet
-          console.log("Registration successful:", res);
-          localStorage.setItem("accessToken", res.accessToken);
-          localStorage.setItem("refreshToken", res.refreshToken);
-          toast.success(
-            "Hesabınız başarıyla oluşturuldu. Giriş ekranına yönlendiriliyorsunuz..."
-          );
-          setTimeout(() => history("/login"), 3000);
-        })
-        .catch((error) => {
-          console.log(error.response?.data); // Backend'in döndürdüğü hata mesajı
-
-          toast.error(
-            "Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin."
-          );
-          dispatch(apiError(error.message));
-        });
+      setError("");
+      setSuccess(false);
+      try {
+        const res = await registerUser(payload);
+        localStorage.setItem("accessToken", res.accessToken);
+        localStorage.setItem("refreshToken", res.refreshToken);
+        setSuccess(true);
+        toast.success(
+          "Hesabınız başarıyla oluşturuldu. Giriş ekranına yönlendiriliyorsunuz..."
+        );
+        setTimeout(() => history("/login"), 1500);
+      } catch (error) {
+        console.log(error.response?.data);
+        setError("Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+        toast.error("Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+      } finally {
+        setSubmitting(false);
+      }
     },
   });
-
-  const selectLayoutState = (state) => state.Account;
-  const registerdatatype = createSelector(selectLayoutState, (account) => ({
-    success: account.success,
-    error: account.error,
-  }));
-  // Inside your component
-  const { error, success } = useSelector(registerdatatype);
-
-  useEffect(() => {
-    dispatch(apiError(""));
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (success) {
-      setTimeout(() => history("/login"), 3000);
-    }
-
-    setTimeout(() => {
-      dispatch(resetRegisterFlag());
-    }, 3000);
-  }, [dispatch, success, error, history]);
 
   document.title = "Basic SignUp | Velzon - React Admin & Dashboard Template";
 
@@ -152,31 +124,14 @@ const Register = () => {
                         className="needs-validation"
                         action="#"
                       >
-                        {success && success ? (
-                          <>
-                            {toast("Your Redirect To Login Page...", {
-                              position: "top-right",
-                              hideProgressBar: false,
-                              className: "bg-success text-white",
-                              progress: undefined,
-                              toastId: "",
-                            })}
-                            <ToastContainer autoClose={2000} limit={1} />
-                            <Alert color="success">
-                              Hesabınız başarıyla oluşturuldu. Giriş ekranına
-                              yönlendiriliyorsunuz...
-                            </Alert>
-                          </>
-                        ) : null}
-
-                        {error && error ? (
-                          <Alert color="danger">
-                            <div>
-                              Böyle bir email adresi ile kayıtlı bir hesap
-                              bulunuyor. Lütfen başka bir email adresi kullanın.
-                            </div>
+                        <ToastContainer autoClose={2000} limit={1} />
+                        {success && (
+                          <Alert color="success">
+                            Hesabınız başarıyla oluşturuldu. Giriş ekranına
+                            yönlendiriliyorsunuz...
                           </Alert>
-                        ) : null}
+                        )}
+                        {error && <Alert color="danger">{error}</Alert>}
                         {/* İsim ve Soyisim alanları yan yana */}
                         <div className="mb-3 d-flex gap-2">
                           <div style={{ flex: 1 }}>
@@ -356,8 +311,11 @@ const Register = () => {
                           <button
                             className="btn btn-success w-100"
                             type="submit"
+                            disabled={validation.isSubmitting}
                           >
-                            Kayıt Ol
+                            {validation.isSubmitting
+                              ? "Kaydediliyor..."
+                              : "Kayıt Ol"}
                           </button>
                         </div>
 

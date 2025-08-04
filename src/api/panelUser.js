@@ -99,3 +99,17 @@ export const getPanelUserEventsById = async (userId) => {
     throw error;
   }
 };
+export const changeServicePackage = async (userId, servicePackageId) => {
+  try {
+    const response = await apiClient.put(
+      `/panelUsers/${userId}/changeServicePackage?servicePackageId=${servicePackageId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      `Error changing service package for panel user with id ${userId}:`,
+      error
+    );
+    throw error;
+  }
+};

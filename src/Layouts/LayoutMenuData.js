@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 //Import Icons
 import FeatherIcon from "feather-icons-react";
+import { add } from "lodash";
 
 const Navdata = () => {
   const history = useNavigate();
@@ -49,6 +50,8 @@ const Navdata = () => {
   // Authentication
   const [isSignIn, setIsSignIn] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [servicePackages, setServicePackages] = useState(false);
+  const [addServicePackages, setAddServicePackages] = useState(false);
   const [isPasswordReset, setIsPasswordReset] = useState(false);
   const [isPasswordCreate, setIsPasswordCreate] = useState(false);
   const [isLockScreen, setIsLockScreen] = useState(false);
@@ -274,6 +277,30 @@ const Navdata = () => {
                 },
                 parentId: "authentication",
                 stateVariables: isSignUp,
+              },
+              {
+                id: "servicePackages",
+                label: "Servis Paketleri",
+                link: "/apps-service-packages",
+                click: function (e) {
+                  e.preventDefault();
+                  setIsSignUp(!servicePackages);
+                  history("/apps-service-packages");
+                },
+                parentId: "authentication",
+                stateVariables: servicePackages,
+              },
+              {
+                id: "AddServicePackage",
+                label: "Servis Paketi Ekle",
+                link: "/apps-add-service-package",
+                click: function (e) {
+                  e.preventDefault();
+                  setIsSignUp(!addServicePackages);
+                  history("/apps-add-service-package");
+                },
+                parentId: "authentication",
+                stateVariables: addServicePackages,
               },
             ],
           },

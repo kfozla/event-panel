@@ -27,7 +27,12 @@ import {
   getPanelUser,
   updatePanelUser,
   changePanelUserPassword,
+  changeServicePackage,
 } from "../../../../api/panelUser";
+import {
+  getServicePackages,
+  getServicePackageById,
+} from "../../../../api/servicePackages";
 import { useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import { set } from "lodash";
@@ -38,12 +43,70 @@ import { useFormik } from "formik";
 const Settings = () => {
   const URL = "http://localhost:5176/";
   const [authUser, setAuthUser] = useState({});
+  const [packages, setPackages] = useState([]);
+  const [activePackage, setActivePackage] = useState(null);
 
   useEffect(() => {
     if (sessionStorage.getItem("authUser")) {
       setAuthUser(JSON.parse(sessionStorage.getItem("authUser")));
     }
   }, []);
+
+  useEffect(() => {
+    const fetchActivePackage = async () => {
+      if (authUser && authUser.servicePackageId) {
+        try {
+          const response = await getServicePackageById(
+            authUser.servicePackageId
+          );
+          setActivePackage(response);
+        } catch (error) {
+          console.error("Error fetching active package:", error);
+        }
+      } else {
+        setActivePackage(null);
+      }
+    };
+    fetchActivePackage();
+  }, [authUser && authUser.servicePackageId]);
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const res = await getServicePackages();
+        setPackages(res || []);
+      } catch (err) {
+        toast.error("Servis paketleri alınamadı");
+      }
+    };
+    fetchPackages();
+  }, []);
+
+  const handlePackageChange = async (pkg) => {
+    try {
+      await changeServicePackage(authUser.id, pkg.id);
+      toast.success("Servis paketi başarıyla değiştirildi.");
+      // Profil güncellendikten sonra kullanıcıyı tekrar çek
+      const updatedUser = await getPanelUser();
+      setAuthUser((prev) => ({
+        ...prev,
+        ...updatedUser.data,
+      }));
+      // SessionStorage'da da güncelle
+      const stored = JSON.parse(sessionStorage.getItem("authUser") || "{}");
+      sessionStorage.setItem(
+        "authUser",
+        JSON.stringify({
+          ...stored,
+          ...updatedUser.data,
+          profilePictureUrl: updatedUser.data?.profilePictureUrl || null,
+          servicePackageId: updatedUser.data?.servicePackageId || null,
+        })
+      );
+    } catch (error) {
+      console.error("Error changing service package:", error);
+      toast.error("Servis paketi değiştirilemedi");
+    }
+  };
 
   // Formik setup
   const formik = useFormik({
@@ -232,7 +295,6 @@ const Settings = () => {
       toast.error("Şifre değiştirilemedi, lütfen bilgileri kontrol edin");
     }
   };
-
   return (
     <React.Fragment>
       <ToastContainer closeButton={false} />
@@ -293,45 +355,55 @@ const Settings = () => {
                   </div>
                 </CardBody>
               </Card>
-              <Card>
-                <CardBody>
-                  <div className="d-flex align-items-center mb-4">
-                    <div className="flex-grow-1">
-                      <h5 className="card-title mb-0">Aktif Hizmet Paketi</h5>
+              {activePackage && (
+                <Card>
+                  <CardBody>
+                    <div className="d-flex align-items-center mb-4">
+                      <div className="flex-grow-1">
+                        <h5 className="card-title mb-0">Aktif Hizmet Paketi</h5>
+                      </div>
+                      <div className="flex-shrink-0 ">
+                        <Link
+                          to="#"
+                          className="badge bg-primary fs-12"
+                          onClick={() => setActiveTab("3")}
+                        >
+                          <i className="ri-add-fill align-bottom me-1"></i>{" "}
+                          Değiştir
+                        </Link>
+                      </div>
                     </div>
-                    <div className="flex-shrink-0 ">
-                      <Link to="#" className="badge bg-primary fs-12">
-                        <i className="ri-add-fill align-bottom me-1"></i>{" "}
-                        Değiştir
-                      </Link>
+                    <div
+                      className="mb-3 d-flex align-items-center paket-card"
+                      style={{
+                        cursor: "pointer",
+                        borderRadius: "8px",
+                        padding: "12px 16px",
+                        background: "#f8f9fa",
+                        transition: "box-shadow 0.2s",
+                        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                      }}
+                      onClick={() => {
+                        /* popup açma fonksiyonu */
+                      }}
+                    >
+                      <div className="avatar-xs d-block flex-shrink-0 me-3">
+                        <span className="avatar-title rounded-circle fs-16 bg-primary-subtle text-primary">
+                          <i className="ri-global-fill"></i>
+                        </span>
+                      </div>
+                      <div>
+                        <div className="fw-bold fs-15">
+                          {activePackage?.title}
+                        </div>
+                        <div className="text-muted small">
+                          {activePackage.activeFor} Ay - Aktif
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div
-                    className="mb-3 d-flex align-items-center paket-card"
-                    style={{
-                      cursor: "pointer",
-                      borderRadius: "8px",
-                      padding: "12px 16px",
-                      background: "#f8f9fa",
-                      transition: "box-shadow 0.2s",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-                    }}
-                    onClick={() => {
-                      /* popup açma fonksiyonu */
-                    }}
-                  >
-                    <div className="avatar-xs d-block flex-shrink-0 me-3">
-                      <span className="avatar-title rounded-circle fs-16 bg-primary-subtle text-primary">
-                        <i className="ri-global-fill"></i>
-                      </span>
-                    </div>
-                    <div>
-                      <div className="fw-bold fs-15">Başlangıç Paketi</div>
-                      <div className="text-muted small">12 Ay - Aktif</div>
-                    </div>
-                  </div>
-                </CardBody>
-              </Card>
+                  </CardBody>
+                </Card>
+              )}
             </Col>
 
             <Col xxl={9}>
@@ -363,6 +435,19 @@ const Settings = () => {
                       >
                         <i className="far fa-user"></i>
                         Şifre Değiştir
+                      </NavLink>
+                    </NavItem>
+                    <NavItem>
+                      <NavLink
+                        to="#"
+                        className={classnames({ active: activeTab === "3" })}
+                        onClick={() => {
+                          tabChange("3");
+                        }}
+                        type="button"
+                      >
+                        <i className="far fa-user"></i>
+                        Hizmet Paketleri
                       </NavLink>
                     </NavItem>
                   </Nav>
@@ -780,6 +865,95 @@ const Settings = () => {
                             Logout
                           </Link>
                         </div>
+                      </div>
+                    </TabPane>
+                    <TabPane tabId="3">
+                      <div className="container mt-4">
+                        <Row className="g-4">
+                          {packages.length === 0 && (
+                            <Col xs={12} className="text-center text-muted">
+                              Hiç servis paketi bulunamadı.
+                            </Col>
+                          )}
+                          {packages.map((pkg) => (
+                            <Col key={pkg.id} md={6} sm={6} xs={12}>
+                              <Card
+                                className="shadow h-100 border-0"
+                                style={{ borderRadius: 16 }}
+                              >
+                                <CardBody
+                                  className="p-4 d-flex flex-column justify-content-between"
+                                  style={{ minHeight: 220 }}
+                                >
+                                  <div className="d-flex align-items-center mb-3">
+                                    <div
+                                      className="avatar-lg d-flex align-items-center justify-content-center bg-primary-subtle rounded-circle me-3"
+                                      style={{ width: 56, height: 56 }}
+                                    >
+                                      <i className="ri-global-fill text-primary fs-3"></i>
+                                    </div>
+                                    <div>
+                                      <div className="fw-bold fs-5 text-primary mb-1">
+                                        {pkg.title || "Paket Adı Bulunamadı"}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {/* Sağ üstte silme butonu */}
+                                  <div
+                                    style={{
+                                      position: "absolute",
+                                      top: 16,
+                                      right: 16,
+                                      zIndex: 2,
+                                      display: "flex",
+                                      gap: "8px",
+                                    }}
+                                  >
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-success border-0 shadow-none"
+                                      onClick={() => handlePackageChange(pkg)}
+                                      title="Sil"
+                                    >
+                                      Bu pakete geç
+                                    </button>
+                                  </div>
+                                  <div
+                                    className="mb-2 text-muted"
+                                    style={{ minHeight: 40 }}
+                                  >
+                                    {pkg.description || (
+                                      <span className="fst-italic">
+                                        Açıklama yok
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="d-flex flex-wrap gap-2 mt-2">
+                                    <div className="bg-light rounded px-2 py-1 small">
+                                      <i className="ri-calendar-2-line me-1 text-primary"></i>
+                                      <span className="fw-semibold">Süre:</span>{" "}
+                                      {pkg.activeFor || 0} Ay
+                                    </div>
+                                    <div className="bg-light rounded px-2 py-1 small">
+                                      <i className="ri-price-tag-3-line me-1 text-primary"></i>
+                                      <span className="fw-semibold">
+                                        Fiyat:
+                                      </span>{" "}
+                                      {pkg.price ? pkg.price + " ₺" : "-"}
+                                    </div>
+                                    <div className="bg-light rounded px-2 py-1 small">
+                                      <i className="ri-stack-line me-1 text-primary"></i>
+                                      <span className="fw-semibold">
+                                        Etkinlik Limiti:
+                                      </span>{" "}
+                                      {pkg.maxEvents || 0}
+                                    </div>
+                                  </div>
+                                </CardBody>
+                              </Card>
+                            </Col>
+                          ))}
+                        </Row>
                       </div>
                     </TabPane>
                   </TabContent>

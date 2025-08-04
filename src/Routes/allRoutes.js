@@ -13,6 +13,9 @@ import AddUser from "../pages/Authentication/AddUser";
 import ListUsers from "../pages/Authentication/ListUsers";
 import UserProfileById from "../pages/Authentication/user-profile-byId";
 import UserEventsList from "../pages/Authentication/UserEventsList";
+import ServicePackagesList from "../pages/Authentication/ServicePackagesList";
+import AddServicePackage from "../pages/Authentication/AddServicePackage";
+import UpdateServicePackage from "../pages/Authentication/UpdateServicePackage";
 //Dashboard
 import DashboardAnalytics from "../pages/DashboardAnalytics";
 import DashboardCrm from "../pages/DashboardCrm";
@@ -283,6 +286,12 @@ const authProtectedRoutes = [
   { path: "/apps-list-users", component: <ListUsers /> },
   { path: "/apps-user-profile/:id", component: <UserProfileById /> },
   { path: "/apps-user-events/:id", component: <UserEventsList /> },
+  { path: "/apps-service-packages", component: <ServicePackagesList /> },
+  { path: "/apps-add-service-package", component: <AddServicePackage /> },
+  {
+    path: "/apps-update-service-package/:id",
+    component: <UpdateServicePackage />,
+  },
 
   { path: "/apps-calendar", component: <Calendar /> },
   { path: "/apps-calendar-month-grid", component: <MonthGrid /> },
