@@ -64,6 +64,7 @@ const UpdateServicePackage = () => {
       durationMonth: "",
       maxEvents: "",
       price: "",
+      storageLimit: "",
     },
     validationSchema: Yup.object({
       title: Yup.string().required("Başlık zorunlu"),
@@ -81,6 +82,10 @@ const UpdateServicePackage = () => {
         .typeError("Sayı girin")
         .min(0, "Fiyat 0'dan küçük olamaz")
         .required("Fiyat zorunlu"),
+      storageLimit: Yup.number()
+        .typeError("Sayı girin")
+        .min(0, "Depolama limiti 0'dan küçük olamaz")
+        .required("Depolama limiti zorunlu"),
     }),
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
@@ -90,6 +95,7 @@ const UpdateServicePackage = () => {
           activeFor: Number(values.durationMonth),
           maxEvents: Number(values.maxEvents),
           price: Number(values.price),
+          storageLimit: Number(values.storageLimit),
         };
         await updateServicePackage(id, payload);
         toast.success("Hizmet paketi güncellendi");
@@ -141,7 +147,7 @@ const UpdateServicePackage = () => {
                         }}
                       >
                         <i className="fas fa-home"></i>
-                        Hizmet Paketi Ekle
+                        Hizmet Paketi Düzenle
                       </NavLink>
                     </NavItem>
                   </Nav>
@@ -297,6 +303,36 @@ const UpdateServicePackage = () => {
                                   {formik.errors.price}
                                 </div>
                               )}
+                            </div>
+                          </Col>
+                          <Col md={6}>
+                            <div className="mb-3">
+                              <Label
+                                htmlFor="storageLimitInput"
+                                className="form-label"
+                              >
+                                Depolama Limiti (GB)
+                              </Label>
+                              <Input
+                                type="number"
+                                className="form-control"
+                                id="storageLimitInput"
+                                name="storageLimit"
+                                placeholder="Depolama limiti girin"
+                                value={formik.values.storageLimit}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                invalid={
+                                  formik.touched.storageLimit &&
+                                  !!formik.errors.storageLimit
+                                }
+                              />
+                              {formik.touched.storageLimit &&
+                                formik.errors.storageLimit && (
+                                  <div className="text-danger small">
+                                    {formik.errors.storageLimit}
+                                  </div>
+                                )}
                             </div>
                           </Col>
                           <Col md={12}>

@@ -53,8 +53,7 @@ const Login = () => {
             password: values.password,
           });
         } catch (err) {
-          console.error("Login Error:", err);
-          setError("Giriş sırasında bir hata oluştu.");
+          setError("Giriş bilgelirinizi kontrol edin");
           setLoading(false);
           return;
         }
@@ -66,7 +65,7 @@ const Login = () => {
         if (res == null || !res || res.status == 401) {
           console.log("test3");
 
-          setError("Giriş başarısız, lütfen tekrar deneyin.");
+          setError("Giriş başarısız. Lütfen tekrar deneyin.");
           setLoading(false);
           return;
         } else {

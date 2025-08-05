@@ -45,11 +45,21 @@ const Register = () => {
       confirm_password: "",
     },
     validationSchema: Yup.object({
-      email: Yup.string().required("Lütfen email adresinizi girin"),
-      username: Yup.string().required("Lütfen kullanıcı adınızı girin"),
-      name: Yup.string().required("Lütfen isminizi girin"),
-      surname: Yup.string().required("Lütfen soyisminizi girin"),
-      password: Yup.string().required("Lütfen şifrenizi girin"),
+      email: Yup.string()
+        .email("Geçerli bir e-posta adresi girin")
+        .required("Lütfen email adresinizi girin"),
+      username: Yup.string()
+        .min(3, "Kullanıcı adı en az 3 karakter olmalı")
+        .required("Lütfen kullanıcı adınızı girin"),
+      name: Yup.string()
+        .min(2, "İsim en az 2 karakter olmalı")
+        .required("Lütfen isminizi girin"),
+      surname: Yup.string()
+        .min(2, "Soyisim en az 2 karakter olmalı")
+        .required("Lütfen soyisminizi girin"),
+      password: Yup.string()
+        .min(8, "Şifre en az 8 karakter olmalı")
+        .required("Lütfen şifrenizi girin"),
       confirm_password: Yup.string()
         .oneOf([Yup.ref("password")], "Şifreler eşleşmiyor")
         .required("Lütfen şifrenizi onaylayın"),
@@ -75,9 +85,8 @@ const Register = () => {
         );
         setTimeout(() => history("/login"), 1500);
       } catch (error) {
-        console.log(error.response?.data);
-        setError("Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.");
-        toast.error("Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+        setError(error.response?.data || "Kayıt sırasında bir hata oluştu.");
+        toast.error(error.response?.data || "Kayıt sırasında bir hata oluştu.");
       } finally {
         setSubmitting(false);
       }

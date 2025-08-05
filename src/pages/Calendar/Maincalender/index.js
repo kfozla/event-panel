@@ -16,7 +16,7 @@ import {
   ModalBody,
   ModalHeader,
   Row,
-  Col
+  Col,
 } from "reactstrap";
 
 import * as Yup from "yup";
@@ -27,7 +27,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { Draggable } from "@fullcalendar/interaction";
 import BootstrapTheme from "@fullcalendar/bootstrap";
 import Flatpickr from "react-flatpickr";
-import listPlugin from '@fullcalendar/list';
+import listPlugin from "@fullcalendar/list";
 
 //redux
 import { useSelector, useDispatch } from "react-redux";
@@ -37,7 +37,7 @@ import DeleteModal from "../../../Components/Common/DeleteModal";
 
 //Simple bar
 import SimpleBar from "simplebar-react";
-import UpcommingEvents from './UpcommingEvents';
+import UpcommingEvents from "./UpcommingEvents";
 
 import {
   getEvents as onGetEvents,
@@ -48,6 +48,8 @@ import {
   resetCalendar,
 } from "../../../slices/thunks";
 import { createSelector } from "reselect";
+
+import { getPanelUserRandevular } from "../../../api/panelUser";
 
 const Calender = () => {
   const dispatch = useDispatch();
@@ -60,6 +62,29 @@ const Calender = () => {
   const [upcommingevents, setUpcommingevents] = useState([]);
   const [isEditButton, setIsEditButton] = useState(true);
 
+  const [randevular, setRandevular] = useState([]);
+  const [authUser, setAuthUser] = useState({});
+
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem("authUser");
+    if (storedUser) {
+      setAuthUser(JSON.parse(storedUser));
+    }
+  }, []); // sadece mount'ta çalışır
+
+  useEffect(() => {
+    if (!authUser || !authUser.id) return;
+    const fetchRandevular = async () => {
+      try {
+        const response = await getPanelUserRandevular(authUser.id);
+        setRandevular(response);
+      } catch (error) {
+        console.error("Error fetching randevular:", error);
+      }
+    };
+    fetchRandevular();
+  }, [authUser.id]);
+
   const selectLayoutState = (state) => state.Calendar;
   const selectLayoutProperties = createSelector(
     selectLayoutState,
@@ -70,9 +95,9 @@ const Calender = () => {
     })
   );
   // Inside your component
-  const {
-    events, categories, isEventUpdated
-  } = useSelector(selectLayoutProperties);
+  const { events, categories, isEventUpdated } = useSelector(
+    selectLayoutProperties
+  );
 
   useEffect(() => {
     dispatch(onGetEvents());
@@ -388,7 +413,7 @@ const Calender = () => {
                         {categories &&
                           categories.map((category, i) => (
                             <div
-                            className={`bg-${category.type}-subtle external-event fc-event text-${category.type}`}
+                              className={`bg-${category.type}-subtle external-event fc-event text-${category.type}`}
                               key={"cat-" + category.id}
                               draggable
                               onDrag={(event) => {
@@ -448,7 +473,7 @@ const Calender = () => {
                           BootstrapTheme,
                           dayGridPlugin,
                           interactionPlugin,
-                          listPlugin
+                          listPlugin,
                         ]}
                         initialView="dayGridMonth"
                         slotDuration={"00:15:00"}
@@ -459,7 +484,7 @@ const Calender = () => {
                           center: "title",
                           right: "dayGridMonth,dayGridWeek,dayGridDay,listWeek",
                         }}
-                        events={events}
+                        events={events} //Todo;
                         editable={true}
                         droppable={true}
                         selectable={true}
@@ -475,7 +500,11 @@ const Calender = () => {
               <div style={{ clear: "both" }}></div>
 
               <Modal isOpen={modal} id="event-modal" centered>
-                <ModalHeader toggle={toggle} tag="h5" className="p-3 bg-info-subtle modal-title">
+                <ModalHeader
+                  toggle={toggle}
+                  tag="h5"
+                  className="p-3 bg-info-subtle modal-title"
+                >
                   {!!isEdit ? "Edit Event" : "Add Event"}
                 </ModalHeader>
                 <ModalBody>
@@ -508,10 +537,7 @@ const Calender = () => {
                           Edit
                         </Link>
                       </div>
-                    ) :
-                      null
-                    }
-
+                    ) : null}
 
                     <div className="event-details">
                       <div className="d-flex mb-2">
@@ -537,7 +563,9 @@ const Calender = () => {
                           <h6 className="d-block fw-semibold mb-0">
                             {" "}
                             <span id="event-location-tag">
-                              {event && event.location !== undefined ? event.location : "No Location"}
+                              {event && event.location !== undefined
+                                ? event.location
+                                : "No Location"}
                             </span>
                           </h6>
                         </div>
@@ -551,7 +579,9 @@ const Calender = () => {
                             className="d-block text-muted mb-0"
                             id="event-description-tag"
                           >
-                            {event && event.description !== undefined ? event.description : "No Description"}
+                            {event && event.description !== undefined
+                              ? event.description
+                              : "No Description"}
                           </p>
                         </div>
                       </div>
@@ -572,12 +602,12 @@ const Calender = () => {
                             onChange={validation.handleChange}
                             onBlur={validation.handleBlur}
                             value={validation.values.category || ""}
-                          // invalid={
-                          //   validation.touched.category &&
-                          //   validation.errors.category
-                          //     ? true
-                          //     : false
-                          // }
+                            // invalid={
+                            //   validation.touched.category &&
+                            //   validation.errors.category
+                            //     ? true
+                            //     : false
+                            // }
                           >
                             <option value="bg-danger-subtle">Danger</option>
                             <option value="bg-success-subtle">Success</option>
@@ -587,7 +617,7 @@ const Calender = () => {
                             <option value="bg-warning-subtle">Warning</option>
                           </Input>
                           {validation.touched.category &&
-                            validation.errors.category ? (
+                          validation.errors.category ? (
                             <FormFeedback type="invalid">
                               {validation.errors.category}
                             </FormFeedback>
@@ -610,15 +640,15 @@ const Calender = () => {
                             onChange={validation.handleChange}
                             onBlur={validation.handleBlur}
                             value={validation.values.title || ""}
-                          // invalid={
-                          //   validation.touched.title &&
-                          //   validation.errors.title
-                          //     ? true
-                          //     : false
-                          // }
+                            // invalid={
+                            //   validation.touched.title &&
+                            //   validation.errors.title
+                            //     ? true
+                            //     : false
+                            // }
                           />
                           {validation.touched.title &&
-                            validation.errors.title ? (
+                          validation.errors.title ? (
                             <FormFeedback type="invalid">
                               {validation.errors.title}
                             </FormFeedback>
@@ -669,16 +699,18 @@ const Calender = () => {
                               placeholder="Event location"
                               onChange={validation.handleChange}
                               onBlur={validation.handleBlur}
-                              value={validation.values.location || "No Location"}
-                            // invalid={
-                            //   validation.touched.location &&
-                            //   validation.errors.location
-                            //     ? true
-                            //     : false
-                            // }
+                              value={
+                                validation.values.location || "No Location"
+                              }
+                              // invalid={
+                              //   validation.touched.location &&
+                              //   validation.errors.location
+                              //     ? true
+                              //     : false
+                              // }
                             />
                             {validation.touched.location &&
-                              validation.errors.location ? (
+                            validation.errors.location ? (
                               <FormFeedback type="invalid">
                                 {validation.errors.location}
                               </FormFeedback>
@@ -701,16 +733,18 @@ const Calender = () => {
                             rows="3"
                             onChange={validation.handleChange}
                             onBlur={validation.handleBlur}
-                            value={validation.values.description || "No Description"}
-                          // invalid={
-                          //   validation.touched.description &&
-                          //   validation.errors.description
-                          //     ? true
-                          //     : false
-                          // }
+                            value={
+                              validation.values.description || "No Description"
+                            }
+                            // invalid={
+                            //   validation.touched.description &&
+                            //   validation.errors.description
+                            //     ? true
+                            //     : false
+                            // }
                           ></textarea>
                           {validation.touched.description &&
-                            validation.errors.description ? (
+                          validation.errors.description ? (
                             <FormFeedback type="invalid">
                               {validation.errors.description}
                             </FormFeedback>
@@ -729,13 +763,15 @@ const Calender = () => {
                           <i className="ri-close-line align-bottom"></i> Delete
                         </button>
                       )}
-                      {isEditButton && <button
-                        type="submit"
-                        className="btn btn-success"
-                        id="btn-save-event"
-                      >
-                        {!!isEdit ? "Edit Event" : "Add Event"}
-                      </button>}
+                      {isEditButton && (
+                        <button
+                          type="submit"
+                          className="btn btn-success"
+                          id="btn-save-event"
+                        >
+                          {!!isEdit ? "Edit Event" : "Add Event"}
+                        </button>
+                      )}
                     </div>
                   </Form>
                 </ModalBody>

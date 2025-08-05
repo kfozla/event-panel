@@ -113,3 +113,15 @@ export const changeServicePackage = async (userId, servicePackageId) => {
     throw error;
   }
 };
+export const getPanelUserRandevular = async (userId) => {
+  try {
+    const response = await apiClient.get(`/panelUsers/${userId}/randevular`);
+    return response.data;
+  } catch (error) {
+    console.error(
+      `Error fetching randevular for panel user with id ${userId}:`,
+      error
+    );
+    throw error;
+  }
+};

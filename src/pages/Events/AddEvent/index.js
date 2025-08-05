@@ -79,6 +79,9 @@ const AddEvent = () => {
       navigate("/apps-events-all");
     } catch (err) {
       console.error(err);
+      toast.error(
+        err.response?.data || "Etkinlik oluşturulurken bir hata oluştu."
+      );
     }
   };
   document.title = "Create Project | Velzon - React Admin & Dashboard Template";

@@ -90,11 +90,8 @@ function ServicePackagesList() {
               </Col>
             )}
             {packages.map((pkg) => (
-              <Col key={pkg.id} md={4} sm={6} xs={12}>
-                <Card
-                  className="shadow h-100 border-0"
-                  style={{ borderRadius: 16 }}
-                >
+              <Col key={pkg.id} md={6} sm={12} xs={12}>
+                <Card className="shadow border-1 " style={{ borderRadius: 16 }}>
                   <CardBody
                     className="p-4 d-flex flex-column justify-content-between"
                     style={{ minHeight: 220 }}
@@ -169,6 +166,13 @@ function ServicePackagesList() {
                           Aktif Kullanıcı:
                         </span>{" "}
                         {pkg.panelUserCount || 0}
+                      </div>
+                      <div className="bg-light rounded px-2 py-1 small">
+                        <i className="ri-user-3-line me-1 text-primary"></i>
+                        <span className="fw-semibold">
+                          Depolama Limiti:
+                        </span>{" "}
+                        {pkg.storageLimit + " GB" || 0}
                       </div>
                     </div>
                   </CardBody>

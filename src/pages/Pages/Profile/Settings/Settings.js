@@ -878,7 +878,7 @@ const Settings = () => {
                           {packages.map((pkg) => (
                             <Col key={pkg.id} md={6} sm={6} xs={12}>
                               <Card
-                                className="shadow h-100 border-0"
+                                className="shadow h-100 border-1"
                                 style={{ borderRadius: 16 }}
                               >
                                 <CardBody
@@ -947,6 +947,13 @@ const Settings = () => {
                                         Etkinlik Limiti:
                                       </span>{" "}
                                       {pkg.maxEvents || 0}
+                                    </div>
+                                    <div className="bg-light rounded px-2 py-1 small">
+                                      <i className="ri-stack-line me-1 text-primary"></i>
+                                      <span className="fw-semibold">
+                                        Depolama Limiti:
+                                      </span>{" "}
+                                      {pkg.storageLimit + " GB" || 0}
                                     </div>
                                   </div>
                                 </CardBody>

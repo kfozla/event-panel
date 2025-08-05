@@ -194,6 +194,18 @@ const Section = ({ eventId }) => {
                                   : ""}
                               </span>
                             </div>
+                            <div>
+                              Saklama Alanı Kullanımı :{" "}
+                              <span className="fw-medium">
+                                {eventData && eventData.storageSize
+                                  ? `${(
+                                      eventData.storageSize /
+                                      1024 /
+                                      1024
+                                    ).toFixed(2)} MB`
+                                  : "0 MB "}
+                              </span>
+                            </div>
 
                             <div
                               className="d-flex justify-content-end gap-2 "
