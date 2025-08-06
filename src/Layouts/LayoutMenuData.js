@@ -211,15 +211,17 @@ const Navdata = () => {
         },
         {
           id: "calendar",
-          label: "Takvim",
-          link: "/#",
+          label: "Randevular",
+          link: "/apps-calendar",
           parentId: "apps",
-          isChildItem: true,
+          isChildItem: false,
           click: function (e) {
             e.preventDefault();
             setCalender(!isCalender);
+            history("/apps-calendar");
           },
           stateVariables: isCalender,
+          /*
           childItems: [
             {
               id: 1,
@@ -233,7 +235,7 @@ const Navdata = () => {
               link: "/apps-calendar-month-grid",
               parentId: "apps",
             },
-          ],
+          ],*/
         },
       ],
     },

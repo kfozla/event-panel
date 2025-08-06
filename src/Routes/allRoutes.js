@@ -8,27 +8,35 @@ import AddEvent from "../pages/Events/AddEvent/index";
 import EventOverview from "../pages/Events/EventOverview/index";
 import UserMediaList from "../pages/Events/EventOverview/UserMediaList";
 
-//Authentication
-import AddUser from "../pages/Authentication/AddUser";
-import ListUsers from "../pages/Authentication/ListUsers";
-import UserProfileById from "../pages/Authentication/user-profile-byId";
-import UserEventsList from "../pages/Authentication/UserEventsList";
-import ServicePackagesList from "../pages/Authentication/ServicePackagesList";
-import AddServicePackage from "../pages/Authentication/AddServicePackage";
-import UpdateServicePackage from "../pages/Authentication/UpdateServicePackage";
+//Admin
+import AddUser from "../pages/Admin/AddUser";
+import ListUsers from "../pages/Admin/ListUsers";
+import UserProfileById from "../pages/Admin/user-profile-byId";
+import UserEventsList from "../pages/Admin/UserEventsList";
+
+//Service Packages
+import ServicePackagesList from "../pages/ServicePackages/ServicePackagesList";
+import AddServicePackage from "../pages/ServicePackages/AddServicePackage";
+import UpdateServicePackage from "../pages/ServicePackages/UpdateServicePackage";
 //Dashboard
 import DashboardAnalytics from "../pages/DashboardAnalytics";
 import DashboardCrm from "../pages/DashboardCrm";
 import DashboardEcommerce from "../pages/DashboardEcommerce";
 import Dashboardjob from "../pages/Dashboardjob/index";
 
+//Randevular
+import MonthGrid from "../pages/Calendar/MonthGrid";
+import Calendar from "../pages/Calendar/Maincalender";
+
+// User Profile
+import UserProfile from "../pages/UserProfile/user-profile";
+import Settings from "../pages/UserProfile/Settings";
+
+//Burdan Sonrası Panelde Kullanılmayanlar
+
 import DashboardCrypto from "../pages/DashboardCrypto";
 import DashboardProject from "../pages/Dashboard";
 import DashboardNFT from "../pages/DashboardNFT";
-
-//Calendar
-import MonthGrid from "../pages/Calendar/MonthGrid";
-import Calendar from "../pages/Calendar/Maincalender";
 
 // Email box
 import MailInbox from "../pages/EmailInbox";
@@ -171,7 +179,7 @@ import BasicPasswReset from "../pages/AuthenticationInner/PasswordReset/BasicPas
 //pages
 import Starter from "../pages/Pages/Starter/Starter";
 import SimplePage from "../pages/Pages/Profile/SimplePage/SimplePage";
-import Settings from "../pages/Pages/Profile/Settings/Settings";
+
 import Team from "../pages/Pages/Team/Team";
 import Timeline from "../pages/Pages/Timeline/Timeline";
 import Faqs from "../pages/Pages/Faqs/Faqs";
@@ -233,9 +241,6 @@ import Echarts from "../pages/Charts/ECharts/index";
 import OnePage from "../pages/Landing/OnePage";
 import NFTLanding from "../pages/Landing/NFTLanding";
 import JobsLanding from "../pages/Job_Landing";
-
-// User Profile
-import UserProfile from "../pages/Authentication/user-profile";
 
 import FileManager from "../pages/FileManager";
 import ToDoList from "../pages/ToDo";

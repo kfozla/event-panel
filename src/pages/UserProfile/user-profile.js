@@ -17,7 +17,8 @@ const formatDate = (dateString) => {
 };
 
 const UserProfile = () => {
-  const URL = "http://localhost:5176/"; // API URL
+  const URL = process.env.REACT_APP_API_REAL_URL;
+
   const [authUser, setAuthUser] = useState({});
   const [activePackage, setActivePackage] = useState(null);
   const navigate = useNavigate();

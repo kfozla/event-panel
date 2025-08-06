@@ -21,7 +21,7 @@ function UserEventsList() {
   const [event, setEvent] = useState(null);
   const [events, setEvents] = useState([]);
   const [deleteModal, setDeleteModal] = useState(false);
-  const URL = "http://localhost:5176/";
+  const URL = process.env.REACT_APP_API_REAL_URL;
 
   useEffect(() => {
     const fetchUser = async () => {

@@ -11,7 +11,7 @@ function ListUsers() {
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
-  const URL = "http://localhost:5176/";
+  const URL = process.env.REACT_APP_API_REAL_URL;
 
   useEffect(() => {
     const fetchUsers = async () => {

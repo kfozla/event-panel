@@ -13,7 +13,7 @@ import avatar1 from "../../assets/images/users/avatar-1.jpg";
 import { createSelector } from "reselect";
 
 const ProfileDropdown = () => {
-  const URL = "http://localhost:5176/"; // API URL
+  const URL = process.env.REACT_APP_API_REAL_URL;
   const profiledropdownData = createSelector(
     (state) => state.Profile,
     (user) => user.user

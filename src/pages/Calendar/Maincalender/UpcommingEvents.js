@@ -2,7 +2,33 @@ import React from "react";
 import { Card, CardBody } from "reactstrap";
 
 function UpcommingEvents(props) {
-
+  // Etkinlik durumu: Bugün, Gelecek veya Bugün saati geçmiş
+  let statusText = "";
+  let isPastToday = false;
+  let isCurrentTime = false;
+  if (props.event.start && props.event.end) {
+    const eventStart = new Date(props.event.start);
+    const eventEnd = new Date(props.event.end);
+    const now = new Date();
+    if (
+      eventStart.getFullYear() === now.getFullYear() &&
+      eventStart.getMonth() === now.getMonth() &&
+      eventStart.getDate() === now.getDate()
+    ) {
+      // Saat hassasiyeti: bugünkü ve saati geçmişse
+      if (eventEnd < now) {
+        isPastToday = true;
+        statusText = "Bugün (Geçmiş Saat)";
+      } else if (eventStart <= now && eventEnd >= now) {
+        isCurrentTime = true;
+        statusText = "Şu An Devam Ediyor";
+      } else {
+        statusText = "Bugün";
+      }
+    } else if (eventStart > now) {
+      statusText = "Gelecek Tarihli";
+    }
+  }
   const getTime = (params) => {
     params = new Date(params);
     if (params.getHours() != null) {
@@ -22,28 +48,29 @@ function UpcommingEvents(props) {
     return hours + ":" + minutes + " " + newformat;
   };
 
-  const str_dt = function formatDate(date) {
+  const str_dt_time = function formatDateTime(date) {
+    if (!date) return "";
+    const d = new Date(date);
+    const day = d.getDate().toString().padStart(2, "0");
     const monthNames = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
+      "Ocak",
+      "Şubat",
+      "Mart",
+      "Nisan",
+      "Mayıs",
+      "Haziran",
+      "Temmuz",
+      "Ağustos",
+      "Eylül",
+      "Ekim",
+      "Kasım",
+      "Aralık",
     ];
-    var d = new Date(date),
-      month = "" + monthNames[d.getMonth()],
-      day = "" + d.getDate(),
-      year = d.getFullYear();
-    if (month.length < 2) month = "0" + month;
-    if (day.length < 2) day = "0" + day;
-    return [day + " " + month, year].join(",");
+    const month = monthNames[d.getMonth()];
+    const year = d.getFullYear();
+    const hour = d.getHours().toString().padStart(2, "0");
+    const minute = d.getMinutes().toString().padStart(2, "0");
+    return `${day} ${month} ${year} ${hour}:${minute}`;
   };
 
   const category = props.event.className.split("-");
@@ -56,7 +83,11 @@ function UpcommingEvents(props) {
   if (e_dt === "Invalid Date" || e_dt === undefined) {
     e_dt = null;
   } else {
-    const newDate = new Date(e_dt).toLocaleDateString('en', { year: 'numeric', month: 'numeric', day: 'numeric' });
+    const newDate = new Date(e_dt).toLocaleDateString("en", {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+    });
     e_dt = new Date(newDate)
       .toLocaleDateString("en-GB", {
         day: "numeric",
@@ -67,55 +98,49 @@ function UpcommingEvents(props) {
       .join(" ");
   }
 
-  const st_date = props.event.start ? str_dt(props.event.start) : null;
-  const ed_date = updatedDay ? str_dt(updatedDay) : null;
-  if (st_date === ed_date) {
-    e_dt = null;
-  }
-  var startDate = props.event.start;
-  if (startDate === "Invalid Date" || startDate === undefined) {
-    startDate = null;
-  } else {
-    const newDate = new Date(startDate).toLocaleDateString('en', { year: 'numeric', month: 'numeric', day: 'numeric' });
-    startDate = new Date(newDate)
-      .toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
-      .split(" ")
-      .join(" ");
-  }
-
-  var end_dt = e_dt ? " to " + e_dt : "";
-  var e_time_s = tConvert(getTime(props.event.start));
-  var e_time_e = tConvert(getTime(updatedDay));
-
-  if (e_time_s === e_time_e) {
-    e_time_s = "Full day event";
-    e_time_e = null;
-  }
-  e_time_e = e_time_e ? " to " + e_time_e : "";
+  const startDate = props.event.start ? str_dt_time(props.event.start) : "";
+  const endDate = props.event.end ? str_dt_time(props.event.end) : "";
 
   return (
-    <Card className="mb-3">
+    <Card
+      className={`mb-3${
+        isPastToday
+          ? " bg-danger-subtle"
+          : isCurrentTime
+          ? " bg-primary-subtle"
+          : ""
+      }`}
+    >
       <CardBody>
         <div className="d-flex mb-3">
           <div className="flex-grow-1">
-            <i
-              className={"mdi mdi-checkbox-blank-circle me-2 text-"+ category[1]}
-            ></i>
-            <span className="fw-medium">
-              {startDate} {end_dt}
-            </span>
-          </div>
-          <div className="flex-shrink-0">
-            <small className="badge bg-primary-subtle text-primary ms-auto">
-              {e_time_s} {e_time_e}
-            </small>
+            <div className="d-flex align-items-center mb-1">
+              <i
+                className={`mdi mdi-checkbox-blank-circle me-2 text-${
+                  isPastToday
+                    ? "danger"
+                    : isCurrentTime
+                    ? "primary"
+                    : category[1]
+                }`}
+                style={{ fontSize: "1.1em" }}
+              ></i>
+              {statusText ? (
+                <span
+                  className="text-muted"
+                  style={{ fontSize: "0.95em", fontWeight: 500 }}
+                >
+                  {statusText}
+                </span>
+              ) : null}
+            </div>
           </div>
         </div>
         <h6 className="card-title fs-16">{props.event.title}</h6>
+        <span className="fw-medium d-flex flex-column mb-2">
+          <span>{startDate}</span>
+          {endDate && startDate !== endDate ? <span>{endDate}</span> : null}
+        </span>
         <p className="text-muted text-truncate-two-lines mb-0">
           {props.event.description === "N.A." ? "" : props.event.description}
         </p>

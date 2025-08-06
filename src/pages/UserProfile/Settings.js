@@ -20,28 +20,27 @@ import classnames from "classnames";
 import Flatpickr from "react-flatpickr";
 
 //import images
-import progileBg from "../../../../assets/images/profile-bg.jpg";
-import avatar1 from "../../../../assets/images/users/avatar-1.jpg";
+
 import {
   uploadPanelUserProfilePicture,
   getPanelUser,
   updatePanelUser,
   changePanelUserPassword,
   changeServicePackage,
-} from "../../../../api/panelUser";
+} from "../../api/panelUser";
 import {
   getServicePackages,
   getServicePackageById,
-} from "../../../../api/servicePackages";
+} from "../../api/servicePackages";
 import { useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import { set } from "lodash";
-import { logoutUser } from "../../../../api/authentication";
+import { logoutUser } from "../../api/authentication";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 
 const Settings = () => {
-  const URL = "http://localhost:5176/";
+  const URL = process.env.REACT_APP_API_REAL_URL;
   const [authUser, setAuthUser] = useState({});
   const [packages, setPackages] = useState([]);
   const [activePackage, setActivePackage] = useState(null);

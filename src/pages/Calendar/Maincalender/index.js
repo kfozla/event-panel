@@ -50,15 +50,25 @@ import {
 import { createSelector } from "reselect";
 
 import { getPanelUserRandevular } from "../../../api/panelUser";
+import {
+  updateRandevu,
+  deleteRandevu,
+  createRandevu,
+  getAllRandevular,
+} from "../../../api/randevu";
+import trLocale from "@fullcalendar/core/locales/tr";
+import { set } from "lodash";
 
 const Calender = () => {
   const dispatch = useDispatch();
   const [event, setEvent] = useState({});
-  const [modal, setModal] = useState(false);
+  // Modal state'leri
+  const [addModal, setAddModal] = useState(false);
+  const [previewModal, setPreviewModal] = useState(false);
+  const [editModal, setEditModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [selectedDay, setSelectedDay] = useState(0);
   const [selectedNewDay, setSelectedNewDay] = useState(0);
-  const [isEdit, setIsEdit] = useState(false);
   const [upcommingevents, setUpcommingevents] = useState([]);
   const [isEditButton, setIsEditButton] = useState(true);
 
@@ -82,8 +92,40 @@ const Calender = () => {
         console.error("Error fetching randevular:", error);
       }
     };
+
     fetchRandevular();
   }, [authUser.id]);
+  const [calendarEvents, setCalendarEvents] = useState([]);
+
+  useEffect(() => {
+    if (randevular && randevular.length > 0) {
+      const now = new Date();
+      now.setSeconds(0, 0);
+      const mapped = randevular.map((r) => {
+        const startDate = new Date(r.start);
+        const endDate = new Date(r.end);
+        let className = "";
+        if (endDate < now) {
+          className = "bg-danger-subtle text-danger"; // geçmiş
+        } else if (startDate <= now && endDate >= now) {
+          className = "bg-primary-subtle text-primary"; // şu an devam eden
+        } else if (startDate > now) {
+          className = "bg-success-subtle text-success"; // gelecek
+        } else {
+          className = "bg-secondary-subtle text-secondary"; // fallback
+        }
+        return {
+          id: r.id,
+          title: r.name,
+          start: r.start,
+          end: r.end,
+          description: r.description,
+          className,
+        };
+      });
+      setCalendarEvents(mapped);
+    }
+  }, [randevular]);
 
   const selectLayoutState = (state) => state.Calendar;
   const selectLayoutProperties = createSelector(
@@ -124,18 +166,46 @@ const Calender = () => {
     }
   }, [dispatch, isEventUpdated]);
 
-  /**
-   * Handling the modal state
-   */
-  const toggle = () => {
-    if (modal) {
-      setModal(false);
-      setEvent(null);
-      setIsEdit(false);
-      setIsEditButton(true);
+  // AddModal aç/kapat
+  const openAddModal = (date) => {
+    // Eğer date bir dizi ise (handleDateClick'ten gelirse), start ve end olarak ayarla
+    let startDate, endDate;
+    if (Array.isArray(date)) {
+      startDate = date[0];
+      endDate = date[1];
     } else {
-      setModal(true);
+      startDate = date;
+      endDate = date;
     }
+    setEvent({ start: startDate, end: endDate });
+    setSelectedNewDay([startDate, endDate]);
+    setAddModal(true);
+  };
+  const closeAddModal = () => {
+    setAddModal(false);
+    setEvent({});
+    setSelectedNewDay([]);
+  };
+
+  // PreviewModal aç/kapat
+  const openPreviewModal = (eventData) => {
+    setEvent(eventData);
+    setPreviewModal(true);
+  };
+  const closePreviewModal = () => {
+    setPreviewModal(false);
+  };
+
+  // EditModal aç/kapat
+  const openEditModal = (eventData) => {
+    setEvent(eventData);
+    setEditModal(true);
+    setSelectedNewDay([eventData.start, eventData.end]);
+  };
+  const closeEditModal = () => {
+    setEditModal(false);
+    setEvent({});
+    setSelectedNewDay([]);
   };
   /**
    * Handling date click on calendar
@@ -143,28 +213,13 @@ const Calender = () => {
 
   const handleDateClick = (arg) => {
     const date = arg["date"];
-    const day = date.getDate();
-    const month = date.getMonth();
-    const year = date.getFullYear();
-
-    const currectDate = new Date();
-    const currentHour = currectDate.getHours();
-    const currentMin = currectDate.getMinutes();
-    const currentSec = currectDate.getSeconds();
-    const modifiedDate = new Date(
-      year,
-      month,
-      day,
-      currentHour,
-      currentMin,
-      currentSec
-    );
-
-    const modifiedData = { ...arg, date: modifiedDate };
-
-    setSelectedNewDay(date);
-    setSelectedDay(modifiedData);
-    toggle();
+    // Seçilen günün saatini 00:00 olarak ayarla
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+    // End date'i aynı günün 23:59'u olarak ayarla
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 0, 0);
+    openAddModal([startDate, endDate]);
   };
 
   const str_dt = function formatDate(date) {
@@ -205,10 +260,9 @@ const Calender = () => {
    * Handling click on event on calendar
    */
   const handleEventClick = (arg) => {
-    const event = arg.event;
-
-    const st_date = event.start;
-    const ed_date = event.end;
+    const eventObj = arg.event;
+    const st_date = eventObj.start;
+    const ed_date = eventObj.end;
     const r_date =
       ed_date == null
         ? str_dt(st_date)
@@ -218,30 +272,36 @@ const Calender = () => {
         ? date_r(st_date)
         : date_r(st_date) + " to " + date_r(ed_date);
 
-    setEvent({
-      id: event.id,
-      title: event.title,
-      start: event.start,
-      end: event.end,
-      className: event.classNames,
-      category: event.classNames[0],
-      location: event._def.extendedProps.location,
-      description: event._def.extendedProps.description,
+    openPreviewModal({
+      id: eventObj.id,
+      title: eventObj.title,
+      start: eventObj.start,
+      end: eventObj.end,
+      className: eventObj.classNames,
+      category: eventObj.classNames[0],
+      location: eventObj._def.extendedProps.location,
+      description: eventObj._def.extendedProps.description,
       defaultDate: er_date,
       datetag: r_date,
     });
-
-    setIsEdit(true);
-    setIsEditButton(false);
-    toggle();
   };
   /**
    * On delete event
    */
   const handleDeleteEvent = () => {
-    dispatch(onDeleteEvent(event.id));
-    setDeleteModal(false);
-    toggle();
+    // API ile silme
+    (async () => {
+      try {
+        await deleteRandevu(event.id);
+        if (authUser && authUser.id) {
+          const response = await getPanelUserRandevular(authUser.id);
+          setRandevular(response);
+        }
+      } catch (error) {
+        console.error("Randevu silme hatası:", error);
+      }
+      setDeleteModal(false);
+    })();
   };
 
   // events validation
@@ -250,89 +310,66 @@ const Calender = () => {
     enableReinitialize: true,
 
     initialValues: {
-      title: (event && event.title) || "",
-      category: (event && event.category) || "",
-      location: (event && event.location) || "",
+      name: (event && event.title) || "",
+      start: (event && event.start) || "",
+      end: (event && event.end) || "",
       description: (event && event.description) || "",
-      defaultDate: (event && event.defaultDate) || "",
-      datetag: (event && event.datetag) || "",
     },
 
     validationSchema: Yup.object({
-      title: Yup.string().required("Please Enter Your Event Name"),
-      category: Yup.string().required("Please Select Your Category"),
+      name: Yup.string().required("İsim zorunlu"),
+      start: Yup.date().required("Başlangıç tarihi zorunlu"),
+      end: Yup.date().required("Bitiş tarihi zorunlu"),
+      description: Yup.string().required("Açıklama zorunlu"),
     }),
-    onSubmit: (values) => {
-      var updatedDay = "";
-      if (selectedNewDay) {
-        updatedDay = new Date(selectedNewDay[1]);
-        updatedDay.setDate(updatedDay.getDate() + 1);
+    onSubmit: async (values) => {
+      // Flatpickr ile seçilen tarih aralığı
+      let startDate = values.start;
+      let endDate = values.end;
+      if (selectedNewDay && selectedNewDay.length === 2) {
+        startDate = selectedNewDay[0];
+        endDate = selectedNewDay[1];
       }
-
-      if (isEdit) {
-        const updateEvent = {
-          id: event.id,
-          title: values.title,
-          className: values.category,
-          start: selectedNewDay ? selectedNewDay[0] : event.start,
-          end: selectedNewDay ? updatedDay : event.end,
-          location: values.location,
-          description: values.description,
-        };
-        // update event
-        dispatch(onUpdateEvent(updateEvent));
+      // Flatpickr'den gelen tarih local'dir, UTC'ye çevrilmeli
+      const toISOStringLocal = (date) => {
+        if (!date) return new Date().toISOString();
+        const d = new Date(date);
+        const tzOffset = d.getTimezoneOffset() * 60000;
+        return (
+          new Date(d.getTime() - tzOffset).toISOString().slice(0, 19) + "Z"
+        );
+      };
+      const payload = {
+        name: values.name,
+        start: startDate
+          ? toISOStringLocal(startDate)
+          : toISOStringLocal(new Date()),
+        end: endDate ? toISOStringLocal(endDate) : toISOStringLocal(new Date()),
+        description: values.description,
+        createdOn: toISOStringLocal(new Date()),
+      };
+      try {
+        if (isEdit) {
+          await updateRandevu(event.id, payload);
+        } else {
+          await createRandevu(payload);
+        }
+        // Güncel randevuları tekrar çek
+        if (authUser && authUser.id) {
+          const response = await getPanelUserRandevular(authUser.id);
+          setRandevular(response);
+        }
         validation.resetForm();
-      } else {
-        const newEvent = {
-          id: Math.floor(Math.random() * 100),
-          title: values["title"],
-          start: selectedDay ? selectedNewDay[0] : new Date(),
-          end: selectedDay ? updatedDay : new Date(),
-          className: values.category,
-          location: values["location"],
-          description: values["description"],
-        };
-        // save new event
-        dispatch(onAddNewEvent(newEvent));
-        validation.resetForm();
+      } catch (error) {
+        console.error("Randevu ekleme/güncelleme hatası:", error);
       }
       setSelectedDay(null);
       setSelectedNewDay(null);
-      toggle();
     },
   });
 
   const submitOtherEvent = () => {
-    document.getElementById("form-event").classList.remove("view-event");
-
-    document
-      .getElementById("event-title")
-      .classList.replace("d-none", "d-block");
-    document
-      .getElementById("event-category")
-      .classList.replace("d-none", "d-block");
-    document
-      .getElementById("event-start-date")
-      .parentNode.classList.remove("d-none");
-    document
-      .getElementById("event-start-date")
-      .classList.replace("d-none", "d-block");
-    document
-      .getElementById("event-location")
-      .classList.replace("d-none", "d-block");
-    document
-      .getElementById("event-description")
-      .classList.replace("d-none", "d-block");
-    document
-      .getElementById("event-start-date-tag")
-      .classList.replace("d-block", "d-none");
-    document
-      .getElementById("event-location-tag")
-      .classList.replace("d-block", "d-none");
-    document
-      .getElementById("event-description-tag")
-      .classList.replace("d-block", "d-none");
-    // document.getElementById("btn-save-event").removeAttribute("hidden");
+    // Sadece formun edit modunu açmak için state'i güncelle
     setIsEditButton(true);
   };
 
@@ -394,77 +431,59 @@ const Calender = () => {
           <Row>
             <Col xs={12}>
               <Row>
+                {/** Welcome Message */}
                 <Col xl={3}>
                   <Card className="card-h-100">
                     <CardBody>
                       <button
                         className="btn btn-primary w-100"
                         id="btn-new-event"
-                        onClick={toggle}
+                        onClick={() => openAddModal()}
                       >
-                        <i className="mdi mdi-plus"></i> Create New Event
+                        <i className="mdi mdi-plus"></i> Yeni Randevu Oluştur
                       </button>
 
                       <div id="external-events">
                         <br />
                         <p className="text-muted">
-                          Drag and drop your event or click in the calendar
+                          Etkinliğinizi sürükleyip bırakın veya takvime tıklayın
                         </p>
-                        {categories &&
-                          categories.map((category, i) => (
-                            <div
-                              className={`bg-${category.type}-subtle external-event fc-event text-${category.type}`}
-                              key={"cat-" + category.id}
-                              draggable
-                              onDrag={(event) => {
-                                onDrag(event, category);
-                              }}
-                            >
-                              <i className="mdi mdi-checkbox-blank-circle me-2" />
-                              {category.title}
-                            </div>
-                          ))}
                       </div>
                     </CardBody>
                   </Card>
-                  <div>
-                    <h5 className="mb-1">Upcoming Events</h5>
-                    <p className="text-muted">Don't miss scheduled events</p>
+                  <div className="border p-3 mt-3">
+                    <h5 className="mb-1">Yaklaşan Randevular</h5>
+                    <p className="text-muted">Kaçırmayın</p>
                     <SimpleBar
                       className="pe-2 me-n1 mb-3"
                       style={{ height: "400px" }}
                     >
                       <div id="upcoming-event-list">
-                        {upcommingevents &&
-                          upcommingevents.map((event, key) => (
-                            <UpcommingEvents event={event} key={key} />
-                          ))}
+                        {calendarEvents &&
+                          calendarEvents
+                            .filter((event) => {
+                              const startDate = new Date(event.start);
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              const threeDaysLater = new Date(today);
+                              threeDaysLater.setDate(today.getDate() + 3);
+                              // Bugün ve sonraki 3 gün
+                              return (
+                                startDate >= today && startDate < threeDaysLater
+                              );
+                            })
+                            .sort(
+                              (a, b) => new Date(a.start) - new Date(b.start)
+                            )
+                            .map((event, key) => (
+                              <UpcommingEvents event={event} key={key} />
+                            ))}
                       </div>
                     </SimpleBar>
                   </div>
-
-                  <Card>
-                    <CardBody className="bg-info-subtle">
-                      <div className="d-flex">
-                        <div className="flex-shrink-0">
-                          <FeatherIcon
-                            icon="calendar"
-                            className="text-info icon-dual-info"
-                          />
-                        </div>
-                        <div className="flex-grow-1 ms-3">
-                          <h6 className="fs-15">Welcome to your Calendar!</h6>
-                          <p className="text-muted mb-0">
-                            Event that applications book will appear here. Click
-                            on an event to see the details and manage applicants
-                            event.
-                          </p>
-                        </div>
-                      </div>
-                    </CardBody>
-                  </Card>
                 </Col>
 
+                {/* Calendar */}
                 <Col xl={9}>
                   <Card className="card-h-100">
                     <CardBody>
@@ -484,13 +503,76 @@ const Calender = () => {
                           center: "title",
                           right: "dayGridMonth,dayGridWeek,dayGridDay,listWeek",
                         }}
-                        events={events} //Todo;
+                        events={calendarEvents}
                         editable={true}
                         droppable={true}
                         selectable={true}
                         dateClick={handleDateClick}
                         eventClick={handleEventClick}
                         drop={onDrop}
+                        eventDrop={async (info) => {
+                          // Sadece günü değiştir, saat bilgisini koru
+                          const oldStart = info.oldEvent.start;
+                          const newStart = info.event.start;
+                          const oldEnd = info.oldEvent.end;
+                          const newEnd = info.event.end;
+                          // Saat bilgisini koruyarak yeni gün oluştur
+                          const updatedStart = new Date(newStart);
+                          const oldStartDate = new Date(oldStart);
+                          updatedStart.setHours(
+                            oldStartDate.getHours(),
+                            oldStartDate.getMinutes(),
+                            oldStartDate.getSeconds(),
+                            oldStartDate.getMilliseconds()
+                          );
+                          let updatedEnd = null;
+                          if (oldEnd && newEnd) {
+                            updatedEnd = new Date(newEnd);
+                            const oldEndDate = new Date(oldEnd);
+                            updatedEnd.setHours(
+                              oldEndDate.getHours(),
+                              oldEndDate.getMinutes(),
+                              oldEndDate.getSeconds(),
+                              oldEndDate.getMilliseconds()
+                            );
+                          }
+                          // Flatpickr ve formda kullandığımız gibi local toISOString fonksiyonu
+                          const toISOStringLocal = (date) => {
+                            if (!date) return new Date().toISOString();
+                            const d = new Date(date);
+                            const tzOffset = d.getTimezoneOffset() * 60000;
+                            return (
+                              new Date(d.getTime() - tzOffset)
+                                .toISOString()
+                                .slice(0, 19) + "Z"
+                            );
+                          };
+                          try {
+                            await updateRandevu(info.event.id, {
+                              name: info.event.title,
+                              start: toISOStringLocal(updatedStart),
+                              end: updatedEnd
+                                ? toISOStringLocal(updatedEnd)
+                                : null,
+                              description:
+                                info.event.extendedProps.description || "",
+                              updatedOn: toISOStringLocal(new Date()),
+                            });
+                            if (authUser && authUser.id) {
+                              const response = await getPanelUserRandevular(
+                                authUser.id
+                              );
+                              setRandevular(response);
+                            }
+                          } catch (error) {
+                            console.error(
+                              "Event güncelleme (sürükle) hatası:",
+                              error
+                            );
+                          }
+                        }}
+                        locales={[trLocale]}
+                        locale="tr"
                       />
                     </CardBody>
                   </Card>
@@ -498,280 +580,306 @@ const Calender = () => {
               </Row>
 
               <div style={{ clear: "both" }}></div>
-
-              <Modal isOpen={modal} id="event-modal" centered>
+              {/* AddModal */}
+              <Modal isOpen={addModal} toggle={closeAddModal} centered>
                 <ModalHeader
-                  toggle={toggle}
+                  toggle={closeAddModal}
                   tag="h5"
                   className="p-3 bg-info-subtle modal-title"
                 >
-                  {!!isEdit ? "Edit Event" : "Add Event"}
+                  Yeni Randevu Oluştur
                 </ModalHeader>
                 <ModalBody>
                   <Form
-                    className={
-                      !!isEdit
-                        ? "needs-validation view-event"
-                        : "needs-validation"
-                    }
-                    name="event-form"
-                    id="form-event"
-                    onSubmit={(e) => {
+                    onSubmit={async (e) => {
                       e.preventDefault();
-                      validation.handleSubmit();
-                      return false;
+                      // Formik ile yeni randevu ekleme
+                      const values = {
+                        name: event.name || "",
+                        start: event.start || "",
+                        end: event.end || "",
+                        description: event.description || "",
+                      };
+                      // Basit validation
+                      if (!values.name || !values.start || !values.end) return;
+                      const toISOStringLocal = (date) => {
+                        if (!date) return new Date().toISOString();
+                        const d = new Date(date);
+                        const tzOffset = d.getTimezoneOffset() * 60000;
+                        return (
+                          new Date(d.getTime() - tzOffset)
+                            .toISOString()
+                            .slice(0, 19) + "Z"
+                        );
+                      };
+                      const payload = {
+                        name: values.name,
+                        start: toISOStringLocal(values.start),
+                        end: toISOStringLocal(values.end),
+                        description: values.description,
+                        createdOn: toISOStringLocal(new Date()),
+                      };
+                      try {
+                        await createRandevu(payload);
+                        if (authUser && authUser.id) {
+                          const response = await getPanelUserRandevular(
+                            authUser.id
+                          );
+                          setRandevular(response);
+                        }
+                        closeAddModal();
+                      } catch (error) {
+                        console.error("Randevu ekleme hatası:", error);
+                      }
                     }}
                   >
-                    {!!isEdit ? (
-                      <div className="text-end">
-                        <Link
-                          to="#"
-                          className="btn btn-sm btn-soft-primary"
-                          id="edit-event-btn"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            submitOtherEvent();
-                            return false;
-                          }}
-                        >
-                          Edit
-                        </Link>
-                      </div>
-                    ) : null}
-
-                    <div className="event-details">
-                      <div className="d-flex mb-2">
-                        <div className="flex-grow-1 d-flex align-items-center">
-                          <div className="flex-shrink-0 me-3">
-                            <i className="ri-calendar-event-line text-muted fs-16"></i>
-                          </div>
-                          <div className="flex-grow-1">
-                            <h6
-                              className="d-block fw-semibold mb-0"
-                              id="event-start-date-tag"
-                            >
-                              {event ? event.datetag : ""}
-                            </h6>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="d-flex align-items-center mb-2">
-                        <div className="flex-shrink-0 me-3">
-                          <i className="ri-map-pin-line text-muted fs-16"></i>
-                        </div>
-                        <div className="flex-grow-1">
-                          <h6 className="d-block fw-semibold mb-0">
-                            {" "}
-                            <span id="event-location-tag">
-                              {event && event.location !== undefined
-                                ? event.location
-                                : "No Location"}
-                            </span>
-                          </h6>
-                        </div>
-                      </div>
-                      <div className="d-flex mb-3">
-                        <div className="flex-shrink-0 me-3">
-                          <i className="ri-discuss-line text-muted fs-16"></i>
-                        </div>
-                        <div className="flex-grow-1">
-                          <p
-                            className="d-block text-muted mb-0"
-                            id="event-description-tag"
-                          >
-                            {event && event.description !== undefined
-                              ? event.description
-                              : "No Description"}
-                          </p>
-                        </div>
-                      </div>
+                    <div className="mb-3">
+                      <Label className="form-label">Randevu İsmi</Label>
+                      <Input
+                        type="text"
+                        placeholder="Randevu ismi giriniz"
+                        value={event.name || ""}
+                        onChange={(e) =>
+                          setEvent({ ...event, name: e.target.value })
+                        }
+                      />
                     </div>
-                    <Row className="event-form">
-                      <Col xs={12}>
-                        <div className="mb-3">
-                          <Label className="form-label">Type</Label>
-                          <Input
-                            className={
-                              !!isEdit
-                                ? "form-select d-none"
-                                : "form-select d-block"
-                            }
-                            name="category"
-                            id="event-category"
-                            type="select"
-                            onChange={validation.handleChange}
-                            onBlur={validation.handleBlur}
-                            value={validation.values.category || ""}
-                            // invalid={
-                            //   validation.touched.category &&
-                            //   validation.errors.category
-                            //     ? true
-                            //     : false
-                            // }
-                          >
-                            <option value="bg-danger-subtle">Danger</option>
-                            <option value="bg-success-subtle">Success</option>
-                            <option value="bg-primary-subtle">Primary</option>
-                            <option value="bg-info-subtle">Info</option>
-                            <option value="bg-dark-subtle">Dark</option>
-                            <option value="bg-warning-subtle">Warning</option>
-                          </Input>
-                          {validation.touched.category &&
-                          validation.errors.category ? (
-                            <FormFeedback type="invalid">
-                              {validation.errors.category}
-                            </FormFeedback>
-                          ) : null}
-                        </div>
-                      </Col>
-                      <Col xs={12}>
-                        <div className="mb-3">
-                          <Label className="form-label">Event Name</Label>
-                          <Input
-                            className={
-                              !!isEdit
-                                ? "form-control d-none"
-                                : "form-control d-block"
-                            }
-                            placeholder="Enter event name"
-                            type="text"
-                            name="title"
-                            id="event-title"
-                            onChange={validation.handleChange}
-                            onBlur={validation.handleBlur}
-                            value={validation.values.title || ""}
-                            // invalid={
-                            //   validation.touched.title &&
-                            //   validation.errors.title
-                            //     ? true
-                            //     : false
-                            // }
-                          />
-                          {validation.touched.title &&
-                          validation.errors.title ? (
-                            <FormFeedback type="invalid">
-                              {validation.errors.title}
-                            </FormFeedback>
-                          ) : null}
-                        </div>
-                      </Col>
-                      <Col xs={12}>
-                        <div className="mb-3">
-                          <Label>Event Date</Label>
-                          <div
-                            className={
-                              !!isEdit ? "input-group d-none" : "input-group"
-                            }
-                          >
-                            <Flatpickr
-                              className="form-control"
-                              id="event-start-date"
-                              name="defaultDate"
-                              placeholder="Select Date"
-                              value={validation.values.defaultDate || ""}
-                              options={{
-                                mode: "range",
-                                dateFormat: "Y-m-d",
-                              }}
-                              onChange={(date) => {
-                                setSelectedNewDay(date);
-                              }}
-                            />
-                            <span className="input-group-text">
-                              <i className="ri-calendar-event-line"></i>
-                            </span>
-                          </div>
-                        </div>
-                      </Col>
-                      <Col xs={12}>
-                        <div className="mb-3">
-                          <Label htmlFor="event-location">Location</Label>
-                          <div>
-                            <Input
-                              type="text"
-                              className={
-                                !!isEdit
-                                  ? "form-control d-none"
-                                  : "form-control d-block"
-                              }
-                              name="location"
-                              id="event-location"
-                              placeholder="Event location"
-                              onChange={validation.handleChange}
-                              onBlur={validation.handleBlur}
-                              value={
-                                validation.values.location || "No Location"
-                              }
-                              // invalid={
-                              //   validation.touched.location &&
-                              //   validation.errors.location
-                              //     ? true
-                              //     : false
-                              // }
-                            />
-                            {validation.touched.location &&
-                            validation.errors.location ? (
-                              <FormFeedback type="invalid">
-                                {validation.errors.location}
-                              </FormFeedback>
-                            ) : null}
-                          </div>
-                        </div>
-                      </Col>
-                      <Col xs={12}>
-                        <div className="mb-3">
-                          <Label className="form-label">Description</Label>
-                          <textarea
-                            className={
-                              !!isEdit
-                                ? "form-control d-none"
-                                : "form-control d-block"
-                            }
-                            id="event-description"
-                            name="description"
-                            placeholder="Enter a description"
-                            rows="3"
-                            onChange={validation.handleChange}
-                            onBlur={validation.handleBlur}
-                            value={
-                              validation.values.description || "No Description"
-                            }
-                            // invalid={
-                            //   validation.touched.description &&
-                            //   validation.errors.description
-                            //     ? true
-                            //     : false
-                            // }
-                          ></textarea>
-                          {validation.touched.description &&
-                          validation.errors.description ? (
-                            <FormFeedback type="invalid">
-                              {validation.errors.description}
-                            </FormFeedback>
-                          ) : null}
-                        </div>
-                      </Col>
-                    </Row>
-                    <div className="hstack gap-2 justify-content-end">
-                      {!!isEdit && (
-                        <button
-                          type="button"
-                          className="btn btn-soft-danger"
-                          id="btn-delete-event"
-                          onClick={() => setDeleteModal(true)}
-                        >
-                          <i className="ri-close-line align-bottom"></i> Delete
-                        </button>
+                    <div className="mb-3">
+                      <Label>Başlangıç Tarihi</Label>
+                      <Flatpickr
+                        className="form-control"
+                        value={event.start || ""}
+                        options={{
+                          dateFormat: "Y-m-d H:i",
+                          enableTime: true,
+                          time_24hr: true,
+                        }}
+                        onChange={(date) => {
+                          setEvent({ ...event, start: date[0] });
+                        }}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <Label>Bitiş Tarihi</Label>
+                      <Flatpickr
+                        className="form-control"
+                        value={event.end || ""}
+                        options={{
+                          dateFormat: "Y-m-d H:i",
+                          enableTime: true,
+                          time_24hr: true,
+                        }}
+                        onChange={(date) => {
+                          setEvent({ ...event, end: date[0] });
+                        }}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <Label className="form-label">Açıklama</Label>
+                      <Input
+                        type="textarea"
+                        placeholder="Açıklama giriniz"
+                        value={event.description || ""}
+                        onChange={(e) =>
+                          setEvent({ ...event, description: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="text-end">
+                      <button type="submit" className="btn btn-success">
+                        Kaydet
+                      </button>
+                    </div>
+                  </Form>
+                </ModalBody>
+              </Modal>
+
+              {/* PreviewModal */}
+              <Modal isOpen={previewModal} toggle={closePreviewModal} centered>
+                <ModalHeader
+                  toggle={closePreviewModal}
+                  tag="h5"
+                  className="p-3 bg-info-subtle modal-title"
+                >
+                  Randevu Detayı
+                </ModalHeader>
+                <ModalBody>
+                  {/* Randevu Detayları */}
+                  <div className="mb-3">
+                    <Label className="form-label fw-bold">Randevu İsmi:</Label>
+                    <div>{event.title || event.name || "-"}</div>
+                  </div>
+                  <div className="mb-3">
+                    <Label className="form-label fw-bold">Tarih:</Label>
+                    <div>
+                      {event.start && event.end ? (
+                        <>
+                          <span>
+                            {new Date(event.start).toLocaleDateString("tr-TR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+
+                          <br />
+                          <span>
+                            {new Date(event.end).toLocaleDateString("tr-TR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </>
+                      ) : (
+                        "-"
                       )}
-                      {isEditButton && (
-                        <button
-                          type="submit"
-                          className="btn btn-success"
-                          id="btn-save-event"
-                        >
-                          {!!isEdit ? "Edit Event" : "Add Event"}
-                        </button>
-                      )}
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <Label className="form-label fw-bold">Açıklama:</Label>
+                    <div>{event.description || "-"}</div>
+                  </div>
+                  <div className="text-end">
+                    <button
+                      className="btn btn-sm btn-soft-primary me-2"
+                      onClick={() => {
+                        closePreviewModal();
+                        openEditModal(event);
+                      }}
+                    >
+                      Düzenle
+                    </button>
+                    <button
+                      className="btn btn-sm btn-soft-danger"
+                      onClick={() => {
+                        closePreviewModal();
+                        setDeleteModal(true);
+                      }}
+                    >
+                      Sil
+                    </button>
+                  </div>
+                </ModalBody>
+              </Modal>
+
+              {/* EditModal */}
+              <Modal isOpen={editModal} toggle={closeEditModal} centered>
+                <ModalHeader
+                  toggle={closeEditModal}
+                  tag="h5"
+                  className="p-3 bg-info-subtle modal-title"
+                >
+                  Randevuyu Düzenle
+                </ModalHeader>
+                <ModalBody>
+                  <Form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      // Formik ile düzenleme
+                      const values = {
+                        name: event.title || event.name || "",
+                        start: event.start || "",
+                        end: event.end || "",
+                        description: event.description || "",
+                      };
+                      // Basit validation
+                      if (!values.name || !values.start || !values.end) return;
+                      const toISOStringLocal = (date) => {
+                        if (!date) return new Date().toISOString();
+                        const d = new Date(date);
+                        const tzOffset = d.getTimezoneOffset() * 60000;
+                        return (
+                          new Date(d.getTime() - tzOffset)
+                            .toISOString()
+                            .slice(0, 19) + "Z"
+                        );
+                      };
+                      const payload = {
+                        name: values.name,
+                        start: toISOStringLocal(values.start),
+                        end: toISOStringLocal(values.end),
+                        description: values.description,
+                        updatedOn: toISOStringLocal(new Date()),
+                      };
+                      try {
+                        await updateRandevu(event.id, payload);
+                        if (authUser && authUser.id) {
+                          const response = await getPanelUserRandevular(
+                            authUser.id
+                          );
+                          setRandevular(response);
+                        }
+                        closeEditModal();
+                      } catch (error) {
+                        console.error("Randevu güncelleme hatası:", error);
+                      }
+                    }}
+                  >
+                    <div className="mb-3">
+                      <Label className="form-label">Randevu İsmi</Label>
+                      <Input
+                        type="text"
+                        placeholder="Randevu ismi giriniz"
+                        value={event.title || event.name || ""}
+                        onChange={(e) =>
+                          setEvent({
+                            ...event,
+                            title: e.target.value,
+                            name: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <Label>Başlangıç Tarihi</Label>
+                      <Flatpickr
+                        className="form-control"
+                        value={event.start || ""}
+                        options={{
+                          dateFormat: "Y-m-d H:i",
+                          enableTime: true,
+                          time_24hr: true,
+                        }}
+                        onChange={(date) => {
+                          setEvent({ ...event, start: date[0] });
+                        }}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <Label>Bitiş Tarihi</Label>
+                      <Flatpickr
+                        className="form-control"
+                        value={event.end || ""}
+                        options={{
+                          dateFormat: "Y-m-d H:i",
+                          enableTime: true,
+                          time_24hr: true,
+                        }}
+                        onChange={(date) => {
+                          setEvent({ ...event, end: date[0] });
+                        }}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <Label className="form-label">Açıklama</Label>
+                      <Input
+                        type="textarea"
+                        placeholder="Açıklama giriniz"
+                        value={event.description || ""}
+                        onChange={(e) =>
+                          setEvent({ ...event, description: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="text-end">
+                      <button type="submit" className="btn btn-success">
+                        Kaydet
+                      </button>
                     </div>
                   </Form>
                 </ModalBody>

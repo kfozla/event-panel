@@ -17,7 +17,7 @@ const formatDate = (dateString) => {
 };
 
 const UserProfileById = () => {
-  const URL = "http://localhost:5176/"; // API URL
+  const URL = process.env.REACT_APP_API_REAL_URL;
   const [panelUser, setPanelUser] = useState({});
   const { id } = useParams();
 
