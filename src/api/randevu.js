@@ -23,3 +23,7 @@ export const getAllRandevular = async () => {
   const response = await apiClient.get("/randevu");
   return response.data;
 };
+export const getRandevularByPanelUserId = async (panelUserId) => {
+  const response = await apiClient.get(`/randevu/panelUser/${panelUserId}`);
+  return response.data;
+};

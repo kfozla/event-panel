@@ -298,6 +298,7 @@ const Section = ({ eventId }) => {
               <DocumentsTab
                 mediaList={eventData ? eventData.mediaList : []}
                 userList={eventData ? eventData.userList : []}
+                eventId={eventData ? eventData.id : null}
               />
             </TabPane>
             <TabPane tabId="3">

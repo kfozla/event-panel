@@ -85,6 +85,7 @@ const UserProfileById = () => {
                         </div>
                       </div>
                     </Col>
+
                     <Col md={3}>
                       <div
                         className="mb-3 d-flex align-items-center paket-card bg-light "
@@ -111,6 +112,17 @@ const UserProfileById = () => {
                           </div>
                           <div className="text-muted small">12 Ay - Aktif</div>
                         </div>
+                      </div>
+                    </Col>
+                    <Col md={3} className="mb-3">
+                      <div className="fw-semibold mt-3">
+                        Depolama Alanı Kullanımı
+                      </div>
+                      <div className="text-muted ">
+                        {(
+                          panelUser.usingStorage / (1024 * 1024 * 1024) || 0
+                        ).toFixed(2)}{" "}
+                        / {panelUser.storageLimit / 1024 / 1024 / 1024 || 0} GB
                       </div>
                     </Col>
                   </Row>

@@ -121,6 +121,7 @@ const UpdateServicePackage = () => {
         durationMonth: servicePackage.activeFor || "",
         maxEvents: servicePackage.maxEvents || "",
         price: servicePackage.price || "",
+        storageLimit: servicePackage.storageLimit || "",
       });
     }
     // eslint-disable-next-line

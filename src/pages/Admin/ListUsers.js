@@ -139,6 +139,14 @@ function ListUsers() {
             >
               <i className="ri-list-unordered"></i>
             </Link>
+            <Link
+              to={`/apps-user-randevu-calendar/${user.id}`}
+              className="btn btn-sm btn-info"
+              style={{ color: "#fff" }}
+              title="Listele"
+            >
+              <i className="ri-calendar-line"></i>
+            </Link>
           </div>
         );
       },

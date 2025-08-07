@@ -171,7 +171,11 @@ const Login = () => {
 
                         <div className="mb-3">
                           <div className="float-end">
-                            <Link to="/forgot-password" className="text-muted">
+                            <Link
+                              to="/forgot-password"
+                              className="text-muted"
+                              tabIndex={-1}
+                            >
                               Şifremi Unuttum?
                             </Link>
                           </div>

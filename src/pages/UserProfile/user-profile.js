@@ -64,7 +64,7 @@ const UserProfile = () => {
               <Card>
                 <CardBody>
                   <Row className="mb-2">
-                    <Col md={8}>
+                    <Col md={4}>
                       <h5 className="mb-4">Profil Detayları</h5>
                       <div className="d-flex align-items-center mb-4">
                         {authUser.profilePictureUrl ? (
@@ -102,6 +102,17 @@ const UserProfile = () => {
                           <h4 className="mb-1">{authUser.username || ""} </h4>
                           <div className="text-muted">{authUser.email}</div>
                         </div>
+                      </div>
+                    </Col>
+                    <Col md={4} className="mb-3">
+                      <div className="fw-semibold mt-3">
+                        Depolama Alanı Kullanımı
+                      </div>
+                      <div className="text-muted ">
+                        {(
+                          authUser.usingStorage / (1024 * 1024 * 1024) || 0
+                        ).toFixed(2)}{" "}
+                        / {authUser.storageLimit / 1024 / 1024 / 1024 || 0} GB
                       </div>
                     </Col>
                     {activePackage && (

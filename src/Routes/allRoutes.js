@@ -13,7 +13,7 @@ import AddUser from "../pages/Admin/AddUser";
 import ListUsers from "../pages/Admin/ListUsers";
 import UserProfileById from "../pages/Admin/user-profile-byId";
 import UserEventsList from "../pages/Admin/UserEventsList";
-
+import UserRandevuCalendar from "../pages/Admin/UserRandevuCalendar";
 //Service Packages
 import ServicePackagesList from "../pages/ServicePackages/ServicePackagesList";
 import AddServicePackage from "../pages/ServicePackages/AddServicePackage";
@@ -296,6 +296,10 @@ const authProtectedRoutes = [
   {
     path: "/apps-update-service-package/:id",
     component: <UpdateServicePackage />,
+  },
+  {
+    path: "/apps-user-randevu-calendar/:id",
+    component: <UserRandevuCalendar />,
   },
 
   { path: "/apps-calendar", component: <Calendar /> },
